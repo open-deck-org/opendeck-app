@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>OpenDeck — Zen / Paper</title>
+
+<!-- Fonts: Inter (UI/body) + Newsreader (editorial serif titles) from Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300&display=swap" rel="stylesheet" />
+
+<!-- Lucide icons via CDN -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+/* ============================================================
+   DESIGN TOKENS — Zen / Paper (ultra-minimal monochrome)
+   ============================================================ */
+:root {
+  /* Type */
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 160ms;
+  --dur: 280ms;
+  --dur-slow: 460ms;
+
+  /* Safe areas */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+/* ---- Light (paper) : default + Auto fallback ---- */
+:root,
+:root[data-theme="light"] {
+  --bg:            #FAFAF8;
+  --surface:       #FFFFFF;
+  --surface-sunk:  #F2F2EE;
+  --separator:     rgba(26, 26, 26, 0.10);
+  --hairline:      rgba(26, 26, 26, 0.08);
+  --text:          #1A1A1A;
+  --text-secondary:#7A7A74;
+  --text-faint:    #B4B4AE;
+  --accent:        #1A1A1A;            /* monochrome: ink is the "accent" */
+  --destructive:   #9B3A33;           /* single restrained muted red */
+  --focus-ring:    rgba(26, 26, 26, 0.32);
+  --press:         rgba(26, 26, 26, 0.05);
+  --thumb-a:       #ECECE6;
+  --thumb-b:       #E2E2DA;
+  --thumb-ink:     rgba(26,26,26,0.14);
+  --scrim:         rgba(250, 250, 248, 0.72);
+}
+
+/* ---- Dark ---- */
+:root[data-theme="dark"] {
+  --bg:            #0A0A0A;
+  --surface:       #141414;
+  --surface-sunk:  #1C1C1C;
+  --separator:     rgba(245, 245, 240, 0.12);
+  --hairline:      rgba(245, 245, 240, 0.08);
+  --text:          #F4F4EF;
+  --text-secondary:#8C8C86;
+  --text-faint:    #555550;
+  --accent:        #F4F4EF;
+  --destructive:   #C76B62;
+  --focus-ring:    rgba(244, 244, 239, 0.40);
+  --press:         rgba(245, 245, 240, 0.06);
+  --thumb-a:       #1E1E1E;
+  --thumb-b:       #161616;
+  --thumb-ink:     rgba(245,245,240,0.12);
+  --scrim:         rgba(10, 10, 10, 0.74);
+}
+
+/* ---- Auto: follow system when no explicit data-theme ---- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg:            #0A0A0A;
+    --surface:       #141414;
+    --surface-sunk:  #1C1C1C;
+    --separator:     rgba(245, 245, 240, 0.12);
+    --hairline:      rgba(245, 245, 240, 0.08);
+    --text:          #F4F4EF;
+    --text-secondary:#8C8C86;
+    --text-faint:    #555550;
+    --accent:        #F4F4EF;
+    --destructive:   #C76B62;
+    --focus-ring:    rgba(244, 244, 239, 0.40);
+    --press:         rgba(245, 245, 240, 0.06);
+    --thumb-a:       #1E1E1E;
+    --thumb-b:       #161616;
+    --thumb-ink:     rgba(245,245,240,0.12);
+    --scrim:         rgba(10, 10, 10, 0.74);
+  }
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-size: 100%; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-weight: 400;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  line-height: 1.5;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  overflow-x: hidden;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+::selection { background: var(--separator); }
+
+.icon { width: 1.25rem; height: 1.25rem; stroke-width: 1.4; display: block; }
+.icon-sm { width: 1.05rem; height: 1.05rem; stroke-width: 1.4; display: block; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app { min-height: 100dvh; }
+
+/* ---- Top navigation bar ---- */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding:
+    calc(var(--sat) + var(--space-4))
+    calc(var(--sar) + var(--space-5))
+    var(--space-4)
+    calc(var(--sal) + var(--space-5));
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  background: var(--scrim);
+  backdrop-filter: saturate(120%) blur(18px);
+  -webkit-backdrop-filter: saturate(120%) blur(18px);
+}
+
+.navbar__title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 6vw, 2.4rem);
+  letter-spacing: -0.01em;
+  margin: 0;
+  line-height: 1;
+}
+
+.navbar__actions { display: flex; align-items: center; gap: var(--space-2); }
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.icon-btn:hover { color: var(--text); }
+.icon-btn:active { background: var(--press); transform: scale(0.94); }
+
+/* ---- Library grid ---- */
+.library {
+  padding:
+    var(--space-5)
+    calc(var(--sar) + var(--space-5))
+    calc(var(--sab) + var(--space-9))
+    calc(var(--sal) + var(--space-5));
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-7) var(--space-6);
+}
+
+/* ---- Deck card (barely-there) ---- */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.card:active .thumb { transform: scale(0.975); }
+
+.card.is-removing {
+  opacity: 0;
+  transform: scale(0.96);
+  pointer-events: none;
+}
+
+.thumb {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  transition: transform var(--dur) var(--ease-out), border-color var(--dur-fast) var(--ease);
+  display: grid;
+  place-items: center;
+}
+.card:hover .thumb { border-color: var(--separator); }
+
+/* Subtle CSS-only thumbnail compositions (no remote images) */
+.thumb__art {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, var(--thumb-a), var(--thumb-b));
+}
+.thumb__glyph {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-serif);
+  color: var(--thumb-ink);
+  font-size: 2.4rem;
+  line-height: 1;
+  user-select: none;
+}
+.thumb__lines {
+  position: absolute;
+  left: 14%;
+  right: 28%;
+  bottom: 16%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.thumb__lines span {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--thumb-ink);
+}
+.thumb__lines span:nth-child(2) { width: 78%; }
+.thumb__lines span:nth-child(3) { width: 54%; }
+.thumb__title-mark {
+  position: absolute;
+  left: 14%;
+  top: 18%;
+  z-index: 1;
+  width: 38%;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--thumb-ink);
+}
+
+.card__label {
+  padding: var(--space-3) var(--space-1) 0;
+}
+.card__title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 1.0625rem;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  margin: 0 0 0.15rem;
+  line-height: 1.25;
+}
+.card__sub {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+/* Hover delete (✕) */
+.card__delete {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 3;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--separator);
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.card:hover .card__delete,
+.card:focus-within .card__delete { opacity: 1; transform: scale(1); }
+.card__delete:hover { color: var(--destructive); }
+
+/* ---- Empty state ---- */
+.empty {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-9) var(--space-5);
+  gap: var(--space-3);
+  color: var(--text-secondary);
+  min-height: 50dvh;
+}
+.empty.is-shown { display: flex; }
+.empty__mark {
+  width: 3.5rem; height: 3.5rem;
+  display: grid; place-items: center;
+  color: var(--text-faint);
+  margin-bottom: var(--space-2);
+}
+.empty__title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--text);
+  margin: 0;
+}
+.empty__body { max-width: 24rem; margin: 0; font-size: 0.95rem; }
+.empty__action {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  border-radius: 999px;
+  border: 1px solid var(--separator);
+  color: var(--text);
+  font-size: 0.9rem;
+  transition: background var(--dur-fast) var(--ease);
+}
+.empty__action:hover { background: var(--press); }
+
+/* dev-only demo toggle */
+.demo-toggle {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--sab) + var(--space-4));
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--separator);
+  border-radius: 999px;
+}
+.demo-toggle:hover { color: var(--text); }
+
+/* ============================================================
+   OVERLAYS (Player, Settings, Sheets)
+   ============================================================ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--bg);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--dur) var(--ease), visibility var(--dur) var(--ease);
+}
+.overlay.is-open { opacity: 1; visibility: visible; }
+
+/* ---- Player ---- */
+.player { display: flex; flex-direction: column; }
+
+.player__bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding:
+    calc(var(--sat) + var(--space-3))
+    calc(var(--sar) + var(--space-4))
+    var(--space-3)
+    calc(var(--sal) + var(--space-4));
+  background: var(--scrim);
+  backdrop-filter: saturate(120%) blur(18px);
+  -webkit-backdrop-filter: saturate(120%) blur(18px);
+  border-bottom: 1px solid var(--hairline);
+  transition: transform var(--dur) var(--ease-out), opacity var(--dur) var(--ease);
+}
+.player.is-immersive .player__bar {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  padding: var(--space-2) var(--space-2) var(--space-2) 0;
+  border-radius: var(--radius-sm);
+  transition: color var(--dur-fast) var(--ease);
+}
+.back-btn:hover { color: var(--text); }
+
+.player__title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Stage */
+.stage-wrap {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: calc(var(--sat) + var(--space-8)) var(--space-5) calc(var(--sab) + var(--space-6));
+}
+.stage {
+  position: relative;
+  width: min(100%, 880px);
+  aspect-ratio: 16 / 10;
+  background: var(--surface);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.5rem, 6vw, 4.5rem);
+}
+/* faux slide content */
+.slide__kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-4);
+}
+.slide__title {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(1.8rem, 6vw, 3.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin: 0 0 var(--space-4);
+  color: var(--text);
+}
+.slide__title em { font-style: italic; }
+.slide__body {
+  font-size: clamp(0.95rem, 2.2vw, 1.15rem);
+  color: var(--text-secondary);
+  max-width: 34ch;
+  margin: 0;
+  line-height: 1.6;
+}
+.slide__rule {
+  width: 2.5rem;
+  height: 1px;
+  background: var(--text);
+  margin: var(--space-5) 0 0;
+  opacity: 0.55;
+}
+
+/* immersive reveal handle */
+.reveal {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translate(-50%, -120%);
+  z-index: 11;
+  margin-top: calc(var(--sat) + var(--space-2));
+  width: 2.6rem; height: 2.6rem;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--separator);
+  opacity: 0;
+  transition: transform var(--dur) var(--ease-out), opacity var(--dur) var(--ease);
+}
+.player.is-immersive .reveal {
+  transform: translate(-50%, 0);
+  opacity: 0.9;
+}
+.reveal:hover { color: var(--text); }
+
+/* ============================================================
+   SETTINGS — grouped inset list (iOS canonical)
+   ============================================================ */
+.settings__scroll {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.settings__bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  padding:
+    calc(var(--sat) + var(--space-3))
+    calc(var(--sar) + var(--space-4))
+    var(--space-3)
+    calc(var(--sal) + var(--space-4));
+  background: var(--scrim);
+  backdrop-filter: saturate(120%) blur(18px);
+  -webkit-backdrop-filter: saturate(120%) blur(18px);
+}
+.settings__inner {
+  max-width: 640px;
+  margin: 0 auto;
+  padding:
+    var(--space-3)
+    calc(var(--sar) + var(--space-5))
+    calc(var(--sab) + var(--space-9))
+    calc(var(--sal) + var(--space-5));
+}
+.settings__h1 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 7vw, 2.6rem);
+  letter-spacing: -0.01em;
+  margin: var(--space-4) 0 var(--space-7);
+}
+
+.group { margin-bottom: var(--space-7); }
+.group__label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-3) var(--space-1);
+}
+.list {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--hairline);
+  overflow: hidden;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  min-height: 3.25rem;
+}
+.row + .row { border-top: 1px solid var(--hairline); }
+.row__label { font-size: 0.95rem; color: var(--text); }
+.row__value { font-size: 0.95rem; color: var(--text-secondary); }
+.row__note {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  padding: var(--space-4) var(--space-5);
+}
+
+/* segmented control */
+.segmented {
+  display: inline-flex;
+  background: var(--surface-sunk);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+.segmented button {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.segmented button[aria-checked="true"] {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  font-weight: 500;
+}
+
+/* ============================================================
+   SHEETS + TOAST (in-app, never browser confirm)
+   ============================================================ */
+.sheet-scrim {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(0,0,0,0.28);
+  opacity: 0; visibility: hidden;
+  transition: opacity var(--dur) var(--ease), visibility var(--dur) var(--ease);
+}
+:root[data-theme="dark"] .sheet-scrim { background: rgba(0,0,0,0.5); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .sheet-scrim { background: rgba(0,0,0,0.5); }
+}
+.sheet-scrim.is-open { opacity: 1; visibility: visible; }
+
+.sheet {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 61;
+  background: var(--surface);
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
+  border-top: 1px solid var(--separator);
+  padding:
+    var(--space-5)
+    calc(var(--sar) + var(--space-5))
+    calc(var(--sab) + var(--space-5))
+    calc(var(--sal) + var(--space-5));
+  transform: translateY(110%);
+  transition: transform var(--dur-slow) var(--ease-out);
+  max-width: 480px;
+  margin: 0 auto;
+}
+.sheet.is-open { transform: translateY(0); }
+.sheet__grip {
+  width: 2.25rem; height: 4px;
+  border-radius: 2px;
+  background: var(--separator);
+  margin: 0 auto var(--space-5);
+}
+.sheet__title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 1.3rem;
+  margin: 0 0 var(--space-2);
+  text-align: center;
+}
+.sheet__body {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 0 auto var(--space-6);
+  max-width: 30ch;
+  line-height: 1.55;
+}
+.sheet__actions { display: flex; flex-direction: column; gap: var(--space-3); }
+.btn {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: center;
+  transition: background var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+}
+.btn--destructive { color: #fff; background: var(--destructive); }
+.btn--destructive:hover { opacity: 0.9; }
+.btn--quiet { color: var(--text); background: var(--surface-sunk); }
+.btn--quiet:hover { background: var(--separator); }
+
+/* toast */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--sab) + var(--space-7));
+  transform: translate(-50%, 1.5rem);
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: var(--text);
+  color: var(--bg);
+  border-radius: 999px;
+  font-size: 0.88rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease-out);
+}
+.toast.is-shown { opacity: 1; transform: translate(-50%, 0); }
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== APP / LIBRARY ===================== -->
+<div class="app" id="app">
+  <header class="navbar">
+    <h1 class="navbar__title">Decks</h1>
+    <nav class="navbar__actions" aria-label="Library actions">
+      <button class="icon-btn" id="btn-settings" aria-label="Settings">
+        <i data-lucide="settings" class="icon"></i>
+      </button>
+      <button class="icon-btn" id="btn-import" aria-label="Import deck">
+        <i data-lucide="plus" class="icon"></i>
+      </button>
+    </nav>
+  </header>
+
+  <main class="library">
+    <section class="grid" id="grid" aria-label="Your decks"></section>
+
+    <section class="empty" id="empty" aria-hidden="true">
+      <div class="empty__mark"><i data-lucide="layers" class="icon" style="width:2.25rem;height:2.25rem;"></i></div>
+      <h2 class="empty__title">A quiet shelf</h2>
+      <p class="empty__body">Your decks will live here. Import a self-contained HTML deck to begin.</p>
+      <button class="empty__action" id="empty-import">Import a deck</button>
+    </section>
+  </main>
+</div>
+
+<button class="demo-toggle" id="demo-toggle" aria-label="Toggle empty state for demo">Toggle empty state</button>
+
+<!-- ===================== PLAYER OVERLAY ===================== -->
+<div class="overlay player" id="player" role="dialog" aria-modal="true" aria-label="Deck player" aria-hidden="true">
+  <div class="player__bar">
+    <button class="back-btn" id="player-back" aria-label="Back to Library">
+      <i data-lucide="chevron-left" class="icon"></i>
+      <span>Library</span>
+    </button>
+    <span class="player__title" id="player-title">Deck</span>
+    <button class="icon-btn" id="player-immersive" aria-label="Enter immersive mode">
+      <i data-lucide="maximize" class="icon-sm"></i>
+    </button>
+  </div>
+
+  <button class="reveal" id="player-reveal" aria-label="Show controls" tabindex="-1">
+    <i data-lucide="chevron-down" class="icon-sm"></i>
+  </button>
+
+  <div class="stage-wrap">
+    <div class="stage" id="stage">
+      <p class="slide__kicker" id="slide-kicker">Chapter One</p>
+      <h2 class="slide__title" id="slide-title">Clarity is a <em>kind of</em> generosity.</h2>
+      <p class="slide__body" id="slide-body">A deck is a single, self-contained idea. Nothing to install, nothing to chase down — it simply opens.</p>
+      <div class="slide__rule"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SETTINGS OVERLAY ===================== -->
+<div class="overlay" id="settings" role="dialog" aria-modal="true" aria-label="Settings" aria-hidden="true">
+  <div class="settings__scroll">
+    <div class="settings__bar">
+      <button class="back-btn" id="settings-back" aria-label="Back to Library">
+        <i data-lucide="chevron-left" class="icon"></i>
+        <span>Decks</span>
+      </button>
+    </div>
+
+    <div class="settings__inner">
+      <h2 class="settings__h1">Settings</h2>
+
+      <section class="group">
+        <p class="group__label">Appearance</p>
+        <div class="list">
+          <div class="row">
+            <span class="row__label">Theme</span>
+            <div class="segmented" role="radiogroup" aria-label="Theme">
+              <button role="radio" data-theme-val="auto"  aria-checked="true">Auto</button>
+              <button role="radio" data-theme-val="light" aria-checked="false">Light</button>
+              <button role="radio" data-theme-val="dark"  aria-checked="false">Dark</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="group">
+        <p class="group__label">About</p>
+        <div class="list">
+          <div class="row"><span class="row__label">Version</span><span class="row__value">0.1.0</span></div>
+          <div class="row"><span class="row__label">App ID</span><span class="row__value">org.opendeck</span></div>
+        </div>
+      </section>
+
+      <section class="group">
+        <p class="group__label">Privacy</p>
+        <div class="list">
+          <p class="row__note">OpenDeck stores everything on your device. Nothing is collected or sent.</p>
+        </div>
+      </section>
+
+      <section class="group">
+        <p class="group__label">Open source</p>
+        <div class="list">
+          <div class="row"><span class="row__label">fflate</span><span class="row__value">MIT</span></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CONFIRM SHEET (delete) ===================== -->
+<div class="sheet-scrim" id="sheet-scrim"></div>
+<div class="sheet" id="confirm-sheet" role="dialog" aria-modal="true" aria-label="Delete deck" aria-hidden="true">
+  <div class="sheet__grip"></div>
+  <h3 class="sheet__title" id="confirm-title">Delete deck?</h3>
+  <p class="sheet__body" id="confirm-body">This removes the deck from your library.</p>
+  <div class="sheet__actions">
+    <button class="btn btn--destructive" id="confirm-delete">Delete</button>
+    <button class="btn btn--quiet" id="confirm-cancel">Cancel</button>
+  </div>
+</div>
+
+<!-- ===================== TOAST ===================== -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <i data-lucide="check" class="icon-sm"></i>
+  <span id="toast-text">Done</span>
+</div>
+
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+const DECKS = [
+  { id:"d1", title:"Welcome to OpenDeck", author:"OpenDeck", ver:"1.0", glyph:"O", art:"glyph",
+    kicker:"Getting Started", slideTitle:"Clarity is a <em>kind of</em> generosity.",
+    slideBody:"A deck is a single, self-contained idea. Nothing to install, nothing to chase down — it simply opens." },
+  { id:"d2", title:"Q3 Product Review", author:"S. Djukic", ver:"1.2", glyph:"Q", art:"lines",
+    kicker:"Q3 · Review", slideTitle:"What moved, and <em>why</em>.",
+    slideBody:"Three numbers worth your attention this quarter, and the one decision behind each." },
+  { id:"d3", title:"Design Principles", author:"Studio", ver:"2.0", glyph:"D", art:"glyph",
+    kicker:"Principles", slideTitle:"Restraint is the <em>whole</em> point.",
+    slideBody:"Less ornament, more intent. Hierarchy from type and space, never decoration." },
+  { id:"d4", title:"Annual Report 2025", author:"Finance", ver:"1.0", glyph:"A", art:"lines",
+    kicker:"2025 · Annual", slideTitle:"A year in <em>plain</em> figures.",
+    slideBody:"Steady growth, careful spending, and a balance sheet that reads like a calm letter." },
+  { id:"d5", title:"Onboarding 101", author:"People Ops", ver:"1.1", glyph:"On", art:"glyph",
+    kicker:"Welcome", slideTitle:"Your first <em>seven</em> days.",
+    slideBody:"A gentle path from hello to first contribution — paced, never rushed." },
+  { id:"d6", title:"Roadmap", author:"Product", ver:"1.0", glyph:"R", art:"lines",
+    kicker:"Ahead", slideTitle:"Where we're <em>headed</em>.",
+    slideBody:"Not a promise of dates, but a shape of intent for the seasons to come." },
+];
+
+/* ============================================================
+   THEME
+   ============================================================ */
+const root = document.documentElement;
+const THEME_KEY = "opendeck.theme";
+
+function applyTheme(val) {
+  if (val === "auto") root.removeAttribute("data-theme");
+  else root.setAttribute("data-theme", val);
+}
+function loadTheme() {
+  const saved = localStorage.getItem(THEME_KEY) || "auto";
+  applyTheme(saved);
+  syncSegmented(saved);
+}
+function setTheme(val) {
+  localStorage.setItem(THEME_KEY, val);
+  applyTheme(val);
+  syncSegmented(val);
+}
+function syncSegmented(val) {
+  document.querySelectorAll("[data-theme-val]").forEach(b => {
+    b.setAttribute("aria-checked", String(b.dataset.themeVal === val));
+  });
+}
+document.querySelectorAll("[data-theme-val]").forEach(btn => {
+  btn.addEventListener("click", () => setTheme(btn.dataset.themeVal));
+});
+
+/* ============================================================
+   LIBRARY RENDER
+   ============================================================ */
+const grid = document.getElementById("grid");
+const emptyEl = document.getElementById("empty");
+let liveDecks = [...DECKS];
+
+function escapeAttr(s){ return s.replace(/"/g,"&quot;"); }
+
+function thumbArt(deck) {
+  if (deck.art === "lines") {
+    return `<div class="thumb__art"></div>
+            <div class="thumb__title-mark"></div>
+            <div class="thumb__lines"><span></span><span></span><span></span></div>`;
+  }
+  return `<div class="thumb__art"></div><div class="thumb__glyph">${deck.glyph}</div>`;
+}
+
+function makeCard(deck) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.id = deck.id;
+  card.innerHTML = `
+    <button class="thumb-btn" style="all:unset;cursor:pointer;display:block;border-radius:var(--radius-md)"
+            aria-label="Open ${escapeAttr(deck.title)}">
+      <div class="thumb">${thumbArt(deck)}</div>
+    </button>
+    <button class="card__delete" aria-label="Delete ${escapeAttr(deck.title)}">
+      <i data-lucide="x" class="icon-sm"></i>
+    </button>
+    <div class="card__label">
+      <p class="card__title">${deck.title}</p>
+      <p class="card__sub">${deck.author} · v${deck.ver}</p>
+    </div>`;
+
+  const openBtn = card.querySelector(".thumb-btn");
+  openBtn.addEventListener("click", () => openPlayer(deck));
+  openBtn.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPlayer(deck); }
+  });
+
+  card.querySelector(".card__delete").addEventListener("click", (e) => {
+    e.stopPropagation();
+    askDelete(deck);
+  });
+
+  // long-press → confirm sheet
+  attachLongPress(card.querySelector(".thumb"), () => askDelete(deck));
+
+  return card;
+}
+
+function renderGrid() {
+  grid.innerHTML = "";
+  liveDecks.forEach(d => grid.appendChild(makeCard(d)));
+  refreshIcons();
+  updateEmpty();
+}
+
+function updateEmpty() {
+  const isEmpty = liveDecks.length === 0;
+  emptyEl.classList.toggle("is-shown", isEmpty);
+  emptyEl.setAttribute("aria-hidden", String(!isEmpty));
+  grid.style.display = isEmpty ? "none" : "";
+}
+
+/* long-press helper */
+function attachLongPress(el, cb) {
+  let timer = null;
+  const start = () => { timer = setTimeout(() => { cb(); }, 550); };
+  const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } };
+  el.addEventListener("touchstart", start, { passive: true });
+  el.addEventListener("touchend", cancel);
+  el.addEventListener("touchmove", cancel, { passive: true });
+  el.addEventListener("mousedown", start);
+  el.addEventListener("mouseup", cancel);
+  el.addEventListener("mouseleave", cancel);
+}
+
+/* ============================================================
+   PLAYER
+   ============================================================ */
+const playerEl = document.getElementById("player");
+const playerTitle = document.getElementById("player-title");
+const immersiveBtn = document.getElementById("player-immersive");
+
+function openPlayer(deck) {
+  playerTitle.textContent = deck.title;
+  document.getElementById("slide-kicker").textContent = deck.kicker;
+  document.getElementById("slide-title").innerHTML = deck.slideTitle;
+  document.getElementById("slide-body").textContent = deck.slideBody;
+  openOverlay(playerEl);
+}
+function setImmersive(on) {
+  playerEl.classList.toggle("is-immersive", on);
+  immersiveBtn.setAttribute("aria-label", on ? "Exit immersive mode" : "Enter immersive mode");
+}
+immersiveBtn.addEventListener("click", () => setImmersive(!playerEl.classList.contains("is-immersive")));
+document.getElementById("player-reveal").addEventListener("click", () => setImmersive(false));
+document.getElementById("player-back").addEventListener("click", () => closeOverlay(playerEl));
+
+/* ============================================================
+   OVERLAY HELPERS
+   ============================================================ */
+let openStack = [];
+function openOverlay(el) {
+  el.classList.add("is-open");
+  el.setAttribute("aria-hidden", "false");
+  openStack.push(el);
+  document.body.style.overflow = "hidden";
+}
+function closeOverlay(el) {
+  el.classList.remove("is-open");
+  el.setAttribute("aria-hidden", "true");
+  if (el === playerEl) setImmersive(false);
+  openStack = openStack.filter(o => o !== el);
+  if (openStack.length === 0) document.body.style.overflow = "";
+}
+
+document.getElementById("btn-settings").addEventListener("click", () => openOverlay(document.getElementById("settings")));
+document.getElementById("settings-back").addEventListener("click", () => closeOverlay(document.getElementById("settings")));
+
+/* ============================================================
+   IMPORT (faux) → toast
+   ============================================================ */
+function showToast(text) {
+  const t = document.getElementById("toast");
+  document.getElementById("toast-text").textContent = text;
+  t.classList.add("is-shown");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("is-shown"), 2200);
+}
+document.getElementById("btn-import").addEventListener("click", () => showToast("Import — choose an .html deck"));
+document.getElementById("empty-import").addEventListener("click", () => showToast("Import — choose an .html deck"));
+
+/* ============================================================
+   DELETE → in-app confirm sheet
+   ============================================================ */
+const sheet = document.getElementById("confirm-sheet");
+const sheetScrim = document.getElementById("sheet-scrim");
+let pendingDeck = null;
+
+function askDelete(deck) {
+  pendingDeck = deck;
+  document.getElementById("confirm-title").textContent = "Delete “" + deck.title + "”?";
+  sheet.setAttribute("aria-hidden", "false");
+  sheetScrim.classList.add("is-open");
+  requestAnimationFrame(() => sheet.classList.add("is-open"));
+  document.getElementById("confirm-delete").focus();
+}
+function closeSheet() {
+  sheet.classList.remove("is-open");
+  sheetScrim.classList.remove("is-open");
+  sheet.setAttribute("aria-hidden", "true");
+  pendingDeck = null;
+}
+sheetScrim.addEventListener("click", closeSheet);
+document.getElementById("confirm-cancel").addEventListener("click", closeSheet);
+document.getElementById("confirm-delete").addEventListener("click", () => {
+  if (!pendingDeck) return;
+  const id = pendingDeck.id;
+  const cardEl = grid.querySelector(`.card[data-id="${id}"]`);
+  closeSheet();
+  if (cardEl) {
+    cardEl.classList.add("is-removing");
+    const finish = () => {
+      liveDecks = liveDecks.filter(d => d.id !== id);
+      updateEmpty();
+      cardEl.remove();
+    };
+    let done = false;
+    const wrap = () => { if (!done) { done = true; finish(); } };
+    cardEl.addEventListener("transitionend", wrap, { once: true });
+    setTimeout(wrap, 400);
+  } else {
+    liveDecks = liveDecks.filter(d => d.id !== id);
+    updateEmpty();
+  }
+  showToast("Deck deleted");
+});
+
+/* ============================================================
+   KEYBOARD
+   ============================================================ */
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (sheet.classList.contains("is-open")) { closeSheet(); return; }
+  if (playerEl.classList.contains("is-open")) {
+    if (playerEl.classList.contains("is-immersive")) setImmersive(false);
+    else closeOverlay(playerEl);
+    return;
+  }
+  const top = openStack[openStack.length - 1];
+  if (top) closeOverlay(top);
+});
+
+/* ============================================================
+   DEMO: toggle empty state
+   ============================================================ */
+let savedDecks = null;
+document.getElementById("demo-toggle").addEventListener("click", () => {
+  if (liveDecks.length > 0) { savedDecks = [...liveDecks]; liveDecks = []; }
+  else { liveDecks = savedDecks ? [...savedDecks] : [...DECKS]; }
+  renderGrid();
+});
+
+/* ============================================================
+   ICONS (Lucide) — re-render after dynamic DOM
+   ============================================================ */
+function refreshIcons() {
+  if (window.lucide && typeof window.lucide.createIcons === "function") {
+    window.lucide.createIcons();
+  }
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+loadTheme();
+renderGrid();
+refreshIcons();
+</script>
+</body>
+</html>

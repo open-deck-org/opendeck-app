@@ -1,0 +1,31 @@
+{
+  "name": "opendeck-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenDeck — a generic HTML-presentation player for iOS, Android, and macOS (Catalyst).",
+  "type": "module",
+  "scripts": {
+    "postinstall": "node scripts/vendor.mjs",
+    "dev": "npx --yes serve www -l 5173",
+    "build:sample": "node scripts/build-sample-deck.mjs",
+    "cap:sync": "cap sync",
+    "add:ios": "cap add ios && cap sync ios",
+    "add:android": "cap add android && cap sync android",
+    "open:ios": "cap open ios",
+    "open:android": "cap open android",
+    "dist:collect": "bash scripts/collect-dist.sh"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/filesystem": "^6.0.0",
+    "@capacitor/ios": "^6.2.1",
+    "@capacitor/share": "^6.0.0",
+    "fflate": "^0.8.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0",
+    "typescript": "^6.0.3"
+  }
+}

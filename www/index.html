@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- viewport-fit=cover for safe areas. NO maximum-scale / user-scalable:
+       locking zoom is an accessibility failure (and an App Review flag). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#FAFAF8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0A0A0A" media="(prefers-color-scheme: dark)" />
+  <title>OpenDeck</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ===================== APP / LIBRARY ===================== -->
+  <div class="app">
+    <header class="navbar">
+      <h1 class="navbar__title">Decks</h1>
+      <nav class="navbar__actions" aria-label="Library actions">
+        <button class="icon-btn" id="btn-settings" type="button" aria-label="Settings">
+          <span data-icon="settings"></span>
+        </button>
+        <label class="icon-btn" id="btn-import" for="import-input" aria-label="Import deck" tabindex="0" role="button">
+          <span data-icon="plus"></span>
+          <input id="import-input" type="file" accept=".deck,.zip,application/zip" hidden />
+        </label>
+      </nav>
+    </header>
+
+    <main class="library">
+      <div class="library__bar" id="library-bar" hidden>
+        <div class="segmented" role="radiogroup" aria-label="Sort and filter decks" id="sort-control">
+          <button type="button" role="radio" data-sort-val="recent" aria-checked="true">Recent</button>
+          <button type="button" role="radio" data-sort-val="name" aria-checked="false">Name</button>
+          <button type="button" role="radio" data-sort-val="favorites" aria-checked="false">Favorites</button>
+        </div>
+      </div>
+
+      <div class="deck-list" id="deck-grid"></div>
+
+      <section class="empty" id="empty-state" aria-hidden="true">
+        <div class="empty__mark"><span data-icon="layers" data-icon-class="icon"></span></div>
+        <h2 class="empty__title">A quiet shelf</h2>
+        <p class="empty__body">
+          Your decks will live here. Import a <code>.deck</code> or <code>.zip</code> package to begin.
+        </p>
+        <label class="empty__action" for="import-input" role="button" tabindex="0">Import a deck</label>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===================== PLAYER OVERLAY ===================== -->
+  <!-- Deck renders in a sandboxed, cross-origin iframe injected into .player-stage.
+       The bar is always visible and the stage sits below it — no resize, so deck
+       layouts never reflow/clip. -->
+  <div class="overlay player" id="player" role="dialog" aria-modal="true" aria-label="Deck player" hidden>
+    <header class="player__bar">
+      <button class="back-btn" id="player-close" type="button" aria-label="Back to library">
+        <span data-icon="chevron-left" data-icon-class="icon"></span>
+        <span data-icon="grid" data-icon-class="icon-sm"></span>
+      </button>
+      <span class="player__title" id="player-title"></span>
+    </header>
+
+    <div class="player-stage"><!-- iframe injected at runtime by player.js --></div>
+  </div>
+
+  <!-- ===================== SETTINGS OVERLAY ===================== -->
+  <div class="overlay settings" id="settings" role="dialog" aria-modal="true" aria-label="Settings" hidden>
+    <div class="settings__scroll">
+      <header class="settings__bar">
+        <button class="back-btn" id="settings-close" type="button" aria-label="Back to library">
+          <span data-icon="chevron-left" data-icon-class="icon"></span>
+          <span data-icon="grid" data-icon-class="icon-sm"></span>
+        </button>
+      </header>
+
+      <div class="settings__inner">
+        <h2 class="settings__h1">Settings</h2>
+
+        <section class="group">
+          <p class="group__label" id="appearance-label">Appearance</p>
+          <div class="list">
+            <div class="row">
+              <span class="row__label">Theme</span>
+              <div class="segmented" role="radiogroup" aria-labelledby="appearance-label" id="theme-control">
+                <button type="button" role="radio" data-theme-val="auto"  aria-checked="true">Auto</button>
+                <button type="button" role="radio" data-theme-val="light" aria-checked="false">Light</button>
+                <button type="button" role="radio" data-theme-val="dark"  aria-checked="false">Dark</button>
+              </div>
+            </div>
+            <div class="row">
+              <span class="row__label" id="cardsize-label">Card size</span>
+              <div class="segmented" role="radiogroup" aria-labelledby="cardsize-label" id="cardsize-control">
+                <button type="button" role="radio" data-cardsize-val="small"  aria-checked="false">Small</button>
+                <button type="button" role="radio" data-cardsize-val="medium" aria-checked="true">Medium</button>
+                <button type="button" role="radio" data-cardsize-val="large"  aria-checked="false">Large</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="group">
+          <p class="group__label">About</p>
+          <div class="list">
+            <div class="row"><span class="row__label">Version</span><span class="row__value" id="about-version">—</span></div>
+            <div class="row"><span class="row__label">App ID</span><span class="row__value">org.opendeck</span></div>
+          </div>
+        </section>
+
+        <section class="group">
+          <p class="group__label">Privacy</p>
+          <div class="list">
+            <p class="row__note">OpenDeck stores every deck on your device. Nothing is collected, tracked, or sent.</p>
+          </div>
+        </section>
+
+        <section class="group">
+          <p class="group__label">Open source</p>
+          <div class="list">
+            <div class="row"><span class="row__label">fflate</span><span class="row__value">MIT</span></div>
+            <div class="row"><span class="row__label">Inter</span><span class="row__value">OFL</span></div>
+            <div class="row"><span class="row__label">Newsreader</span><span class="row__value">OFL</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== CARD ACTIONS SHEET ===================== -->
+  <div class="sheet-scrim" id="sheet-scrim" hidden></div>
+  <div class="sheet" id="actions-sheet" role="dialog" aria-modal="true" aria-labelledby="actions-title" hidden>
+    <div class="sheet__grip"></div>
+    <h3 class="sheet__title" id="actions-title">Deck</h3>
+    <div class="sheet__actions">
+      <button class="btn btn--quiet btn--leading" id="action-favorite" type="button">
+        <span class="btn__icon" id="action-favorite-icon"></span>
+        <span id="action-favorite-label">Add to Favorites</span>
+      </button>
+      <button class="btn btn--danger-text btn--leading" id="action-delete" type="button">
+        <span class="btn__icon" data-icon="trash" data-icon-class="icon-sm"></span>
+        <span>Delete</span>
+      </button>
+      <button class="btn btn--quiet" id="action-cancel" type="button">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ===================== CONFIRM SHEET (delete) ===================== -->
+  <div class="sheet" id="confirm-sheet" role="dialog" aria-modal="true" aria-labelledby="confirm-title" hidden>
+    <div class="sheet__grip"></div>
+    <h3 class="sheet__title" id="confirm-title">Delete deck?</h3>
+    <p class="sheet__body" id="confirm-body">This removes the deck from your library.</p>
+    <div class="sheet__actions">
+      <button class="btn btn--destructive" id="confirm-delete" type="button">Delete</button>
+      <button class="btn btn--quiet" id="confirm-cancel" type="button">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ===================== TOAST ===================== -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span class="toast__icon" data-icon="check" data-icon-class="icon-sm"></span>
+    <span id="toast-text">Done</span>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

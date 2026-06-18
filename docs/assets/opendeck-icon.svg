@@ -1,0 +1,30 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OpenDeck app icon">
+  <!-- ============================================================
+       OpenDeck — Zen app-icon master (light / paper).
+       Two named groups map 1:1 to Icon Composer layers:
+         #bg  → Background layer (paper)
+         #fg  → Foreground layer (the deck mark)
+       Full-bleed square; the OS applies the rounded-rect mask.
+       Dark variant: bg #0A0A0A, card #F4F4EF, lens stroke #0A0A0A.
+       ============================================================ -->
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FAFAF8"/>
+      <stop offset="1" stop-color="#F0F0EA"/>
+    </linearGradient>
+  </defs>
+
+  <g id="bg">
+    <rect width="1024" height="1024" fill="url(#paper)"/>
+  </g>
+
+  <g id="fg">
+    <!-- back card (a second deck, peeking) -->
+    <rect x="312" y="250" width="400" height="470" rx="56"
+          fill="none" stroke="#1A1A1A" stroke-opacity="0.18" stroke-width="20"/>
+    <!-- front card: the deck -->
+    <rect x="272" y="300" width="480" height="470" rx="64" fill="#1A1A1A"/>
+    <!-- lens / "O": the deck, opened -->
+    <circle cx="512" cy="535" r="132" fill="none" stroke="#FAFAF8" stroke-width="34"/>
+  </g>
+</svg>

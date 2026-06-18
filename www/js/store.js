@@ -1,0 +1,240 @@
+// DeckStore: persists imported decks and exposes the library list.
+//
+//  - Web / PWA: IndexedDB. Unzipped files live in the `files` object store
+//    keyed `${id}/${path}`; the service worker (sw.js) reads the SAME database
+//    to serve `/__deck__/<id>/...`.
+//  - Native (iOS/Android/Catalyst): the Capacitor Filesystem plugin writes the
+//    unzipped tree under Directory.Library/decks/<id>/...; the native deck://
+//    scheme handler (or Android asset loader) reads it straight off disk.
+//
+// Both backends expose the same async API: list, importPackage, remove.
+
+import { isNative, plugin } from './platform.js';
+import { parsePackage } from './unzip.js';
+import { mimeFor } from './mime.js';
+
+const INDEX_KEY = 'index';
+
+/* ----------------------------- web backend ----------------------------- */
+
+const DB_NAME = 'opendeck';
+const DB_VERSION = 1;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('decks')) db.createObjectStore('decks', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('files')) db.createObjectStore('files');
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function tx(db, stores, mode, fn) {
+  return new Promise((resolve, reject) => {
+    const t = db.transaction(stores, mode);
+    const result = fn(t);
+    t.oncomplete = () => resolve(result);
+    t.onerror = () => reject(t.error);
+    t.onabort = () => reject(t.error);
+  });
+}
+
+const webBackend = {
+  async list() {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const out = [];
+      const cur = db.transaction('decks').objectStore('decks').openCursor();
+      cur.onsuccess = () => {
+        const c = cur.result;
+        if (c) { out.push(c.value); c.continue(); }
+        else resolve(out.sort((a, b) => b.addedAt - a.addedAt));
+      };
+      cur.onerror = () => reject(cur.error);
+    });
+  },
+
+  async importPackage(bytes, filename) {
+    const { manifest, files } = await parsePackage(bytes, filename);
+    const db = await openDB();
+    await tx(db, ['decks', 'files'], 'readwrite', (t) => {
+      const fstore = t.objectStore('files');
+      for (const [path, data] of files) {
+        fstore.put({ data, mime: mimeFor(path) }, `${manifest.id}/${path}`);
+      }
+      t.objectStore('decks').put({ ...manifest, addedAt: Date.now() });
+    });
+    return manifest;
+  },
+
+  async seedFiles(manifest, files) {
+    const db = await openDB();
+    await tx(db, ['decks', 'files'], 'readwrite', (t) => {
+      const fstore = t.objectStore('files');
+      for (const [path, data] of files) {
+        fstore.put({ data, mime: mimeFor(path) }, `${manifest.id}/${path}`);
+      }
+      t.objectStore('decks').put({ ...manifest, addedAt: Date.now() });
+    });
+  },
+
+  async remove(id) {
+    const db = await openDB();
+    await tx(db, ['decks', 'files'], 'readwrite', (t) => {
+      t.objectStore('decks').delete(id);
+      const fstore = t.objectStore('files');
+      const range = IDBKeyRange.bound(`${id}/`, `${id}/￿`);
+      fstore.openCursor(range).onsuccess = (e) => {
+        const c = e.target.result;
+        if (c) { c.delete(); c.continue(); }
+      };
+    });
+  },
+
+  async touch(id) {
+    const db = await openDB();
+    await tx(db, ['decks'], 'readwrite', (t) => {
+      const store = t.objectStore('decks');
+      const req = store.get(id);
+      req.onsuccess = () => {
+        const rec = req.result;
+        if (rec) { rec.lastOpenedAt = Date.now(); store.put(rec); }
+      };
+    });
+  },
+
+  async setFavorite(id, value) {
+    const db = await openDB();
+    await tx(db, ['decks'], 'readwrite', (t) => {
+      const store = t.objectStore('decks');
+      const req = store.get(id);
+      req.onsuccess = () => {
+        const rec = req.result;
+        if (rec) { rec.favorite = !!value; store.put(rec); }
+      };
+    });
+  },
+};
+
+/* --------------------------- native backend ---------------------------- */
+
+// Directory.Library: app-managed storage. iOS -> Library/, Android -> filesDir/.
+// The native deck:// handlers read from this same root (see native/ docs).
+const DIR = 'LIBRARY';
+const ROOT = 'decks';          // decks/<id>/...
+
+function fsPlugin() {
+  const fs = plugin('Filesystem');
+  if (!fs) throw new Error('Capacitor Filesystem plugin not available.');
+  return fs;
+}
+
+function toBase64(u8) {
+  let s = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < u8.length; i += CHUNK) {
+    s += String.fromCharCode.apply(null, u8.subarray(i, i + CHUNK));
+  }
+  return btoa(s);
+}
+
+async function readIndex(fs) {
+  try {
+    const res = await fs.readFile({ path: `${ROOT}/${INDEX_KEY}.json`, directory: DIR, encoding: 'utf8' });
+    return JSON.parse(res.data);
+  } catch {
+    return [];
+  }
+}
+
+async function writeIndex(fs, list) {
+  await fs.writeFile({
+    path: `${ROOT}/${INDEX_KEY}.json`,
+    directory: DIR,
+    data: JSON.stringify(list),
+    encoding: 'utf8',
+    recursive: true,
+  });
+}
+
+const nativeBackend = {
+  async list() {
+    const fs = fsPlugin();
+    return (await readIndex(fs)).sort((a, b) => b.addedAt - a.addedAt);
+  },
+
+  async importPackage(bytes, filename) {
+    const fs = fsPlugin();
+    const { manifest, files } = await parsePackage(bytes, filename);
+    for (const [path, data] of files) {
+      await fs.writeFile({
+        path: `${ROOT}/${manifest.id}/${path}`,
+        directory: DIR,
+        data: toBase64(data),   // base64 == binary-safe write
+        recursive: true,
+      });
+    }
+    const list = (await readIndex(fs)).filter((d) => d.id !== manifest.id);
+    list.push({ ...manifest, addedAt: Date.now() });
+    await writeIndex(fs, list);
+    return manifest;
+  },
+
+  async seedFiles(manifest, files) {
+    const fs = fsPlugin();
+    for (const [path, data] of files) {
+      await fs.writeFile({
+        path: `${ROOT}/${manifest.id}/${path}`,
+        directory: DIR,
+        data: toBase64(data),
+        recursive: true,
+      });
+    }
+    const list = (await readIndex(fs)).filter((d) => d.id !== manifest.id);
+    list.push({ ...manifest, addedAt: Date.now() });
+    await writeIndex(fs, list);
+  },
+
+  async remove(id) {
+    const fs = fsPlugin();
+    try {
+      await fs.rmdir({ path: `${ROOT}/${id}`, directory: DIR, recursive: true });
+    } catch { /* already gone */ }
+    await writeIndex(fs, (await readIndex(fs)).filter((d) => d.id !== id));
+  },
+
+  async touch(id) {
+    const fs = fsPlugin();
+    const list = await readIndex(fs);
+    const rec = list.find((d) => d.id === id);
+    if (!rec) return;
+    rec.lastOpenedAt = Date.now();
+    await writeIndex(fs, list);
+  },
+
+  async setFavorite(id, value) {
+    const fs = fsPlugin();
+    const list = await readIndex(fs);
+    const rec = list.find((d) => d.id === id);
+    if (!rec) return;
+    rec.favorite = !!value;
+    await writeIndex(fs, list);
+  },
+};
+
+/* ------------------------------ facade --------------------------------- */
+
+const backend = isNative() ? nativeBackend : webBackend;
+
+export const DeckStore = {
+  list: () => backend.list(),
+  importPackage: (bytes, filename) => backend.importPackage(bytes, filename),
+  seedFiles: (manifest, files) => backend.seedFiles(manifest, files),
+  remove: (id) => backend.remove(id),
+  touch: (id) => backend.touch(id),
+  setFavorite: (id, value) => backend.setFavorite(id, value),
+};

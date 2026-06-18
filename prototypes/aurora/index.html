@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>OpenDeck — Aurora</title>
+
+<!-- Fonts: Inter (UI) + Quicksand (soft rounded display) from Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  /* Brand */
+  --brand-indigo: #6C8CFF;
+  --brand-indigo-press: #5A7AF0;
+
+  /* Type scale (rem so Dynamic Type / zoom works) */
+  --fs-large-title: 2.125rem;  /* 34 */
+  --fs-title:       1.4375rem; /* 23 */
+  --fs-headline:    1.0625rem; /* 17 */
+  --fs-body:        1.0625rem; /* 17 */
+  --fs-callout:     1rem;      /* 16 */
+  --fs-subhead:     0.9375rem; /* 15 */
+  --fs-footnote:    0.8125rem; /* 13 */
+  --fs-caption:     0.75rem;   /* 12 */
+
+  /* Spacing */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+
+  /* Radii — everything soft */
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 24px;
+  --r-xl: 32px;
+  --r-pill: 999px;
+
+  /* Motion */
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 140ms;
+  --dur-med: 280ms;
+  --dur-slow: 460ms;
+}
+
+/* Light theme (default fallback) */
+:root,
+:root[data-theme="light"] {
+  --bg: #F7F5F2;
+  --bg-tint-a: #FFE8D6; /* peach */
+  --bg-tint-b: #E7E0FF; /* lavender */
+  --bg-tint-c: #D6F2E4; /* mint */
+  --surface: rgba(255, 255, 255, 0.62);
+  --surface-solid: #FFFFFF;
+  --surface-strong: rgba(255, 255, 255, 0.82);
+  --separator: rgba(60, 50, 80, 0.10);
+  --text: #1E1B2E;
+  --text-secondary: #6A6580;
+  --accent: var(--brand-indigo);
+  --accent-press: var(--brand-indigo-press);
+  --shadow-soft: 0 10px 30px -12px rgba(60, 50, 110, 0.25);
+  --shadow-lift: 0 24px 50px -16px rgba(60, 50, 110, 0.35);
+  --ring: rgba(108, 140, 255, 0.55);
+  --scrim: rgba(247, 245, 242, 0.55);
+  --glyph-on-thumb: rgba(255,255,255,0.95);
+}
+
+/* Dark theme */
+:root[data-theme="dark"] {
+  --bg: #0C0B12;
+  --bg-tint-a: #1E2A4A; /* deep indigo */
+  --bg-tint-b: #143A38; /* teal */
+  --bg-tint-c: #2A1C3E; /* violet */
+  --surface: rgba(30, 28, 44, 0.55);
+  --surface-solid: #17151F;
+  --surface-strong: rgba(34, 31, 48, 0.78);
+  --separator: rgba(255, 255, 255, 0.08);
+  --text: #F3F1FA;
+  --text-secondary: #A9A4BD;
+  --accent: var(--brand-indigo);
+  --accent-press: #88A2FF;
+  --shadow-soft: 0 14px 36px -14px rgba(0, 0, 0, 0.6);
+  --shadow-lift: 0 28px 60px -18px rgba(0, 0, 0, 0.7);
+  --ring: rgba(124, 154, 255, 0.7);
+  --scrim: rgba(12, 11, 18, 0.6);
+  --glyph-on-thumb: rgba(255,255,255,0.92);
+}
+
+/* Auto = follow system */
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] {
+    --bg: #0C0B12;
+    --bg-tint-a: #1E2A4A;
+    --bg-tint-b: #143A38;
+    --bg-tint-c: #2A1C3E;
+    --surface: rgba(30, 28, 44, 0.55);
+    --surface-solid: #17151F;
+    --surface-strong: rgba(34, 31, 48, 0.78);
+    --separator: rgba(255, 255, 255, 0.08);
+    --text: #F3F1FA;
+    --text-secondary: #A9A4BD;
+    --accent-press: #88A2FF;
+    --shadow-soft: 0 14px 36px -14px rgba(0, 0, 0, 0.6);
+    --shadow-lift: 0 28px 60px -18px rgba(0, 0, 0, 0.7);
+    --ring: rgba(124, 154, 255, 0.7);
+    --scrim: rgba(12, 11, 18, 0.6);
+    --glyph-on-thumb: rgba(255,255,255,0.92);
+  }
+}
+
+/* ============================================================
+   RESET / BASE
+   ============================================================ */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: var(--fs-body);
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button { font-family: inherit; color: inherit; }
+
+/* Visible focus rings everywhere */
+:focus-visible {
+  outline: 2.5px solid var(--ring);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* ============================================================
+   AMBIENT AURORA BACKGROUND
+   ============================================================ */
+.aurora {
+  position: fixed;
+  inset: -25%;
+  z-index: -2;
+  pointer-events: none;
+  filter: blur(60px) saturate(125%);
+  opacity: 0.9;
+}
+.aurora .blob {
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  mix-blend-mode: normal;
+  will-change: transform;
+}
+.blob.a {
+  background: radial-gradient(circle at 30% 30%, var(--bg-tint-a), transparent 65%);
+  top: -10%; left: -5%;
+  animation: drift-a 38s ease-in-out infinite alternate;
+}
+.blob.b {
+  background: radial-gradient(circle at 50% 50%, var(--bg-tint-b), transparent 65%);
+  bottom: -15%; right: -10%;
+  animation: drift-b 46s ease-in-out infinite alternate;
+}
+.blob.c {
+  background: radial-gradient(circle at 50% 50%, var(--bg-tint-c), transparent 65%);
+  top: 25%; left: 35%;
+  animation: drift-c 52s ease-in-out infinite alternate;
+}
+@keyframes drift-a {
+  0%   { transform: translate(0,0) scale(1); }
+  100% { transform: translate(8vw, 6vh) scale(1.15); }
+}
+@keyframes drift-b {
+  0%   { transform: translate(0,0) scale(1.1); }
+  100% { transform: translate(-7vw, -5vh) scale(0.95); }
+}
+@keyframes drift-c {
+  0%   { transform: translate(0,0) scale(0.95); }
+  100% { transform: translate(-6vw, 7vh) scale(1.2); }
+}
+
+/* ============================================================
+   APP SHELL / SCREENS
+   ============================================================ */
+.app { min-height: 100%; position: relative; }
+.screen { display: none; }
+.screen.active { display: block; animation: screen-in var(--dur-med) var(--ease-soft); }
+@keyframes screen-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   NAVIGATION BAR
+   ============================================================ */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding:
+    calc(env(safe-area-inset-top) + var(--sp-3))
+    calc(env(safe-area-inset-right) + var(--sp-5))
+    var(--sp-3)
+    calc(env(safe-area-inset-left) + var(--sp-5));
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--separator);
+}
+.navbar .nav-title {
+  font-weight: 700;
+  font-size: var(--fs-title);
+  letter-spacing: -0.01em;
+  flex: 1;
+}
+.navbar.with-back .nav-title {
+  text-align: center;
+  position: absolute;
+  left: 0; right: 0;
+  pointer-events: none;
+}
+
+/* Icon buttons */
+.icon-btn {
+  appearance: none;
+  border: none;
+  background: var(--surface-strong);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  width: 42px; height: 42px;
+  border-radius: var(--r-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text);
+  box-shadow: var(--shadow-soft);
+  transition: transform var(--dur-fast) var(--ease-spring),
+              background var(--dur-fast) var(--ease-soft);
+}
+.icon-btn:hover { transform: translateY(-1px); }
+.icon-btn:active { transform: scale(0.92); background: var(--separator); }
+.icon-btn svg { width: 21px; height: 21px; }
+
+.text-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--accent);
+  font-size: var(--fs-headline);
+  font-weight: 500;
+  cursor: pointer;
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) 0;
+  border-radius: var(--r-sm);
+  transition: opacity var(--dur-fast);
+}
+.text-btn:active { opacity: 0.5; }
+.text-btn svg { width: 22px; height: 22px; }
+
+/* ============================================================
+   LIBRARY
+   ============================================================ */
+.library-head {
+  padding:
+    var(--sp-6)
+    calc(env(safe-area-inset-right) + var(--sp-5))
+    var(--sp-2)
+    calc(env(safe-area-inset-left) + var(--sp-5));
+}
+.library-head h1 {
+  margin: 0;
+  font-family: "Quicksand", "Inter", sans-serif;
+  font-weight: 700;
+  font-size: var(--fs-large-title);
+  letter-spacing: -0.02em;
+}
+.library-head p {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--fs-subhead);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--sp-5);
+  padding:
+    var(--sp-4)
+    calc(env(safe-area-inset-right) + var(--sp-5))
+    calc(env(safe-area-inset-bottom) + var(--sp-10))
+    calc(env(safe-area-inset-left) + var(--sp-5));
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* Deck card */
+.card {
+  position: relative;
+  border: none;
+  text-align: left;
+  background: var(--surface);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid var(--surface-strong);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3);
+  box-shadow: var(--shadow-soft);
+  cursor: pointer;
+  color: var(--text);
+  transition: transform var(--dur-med) var(--ease-spring),
+              box-shadow var(--dur-med) var(--ease-soft),
+              opacity var(--dur-med) var(--ease-soft);
+  transform-origin: center;
+}
+.card:hover { transform: translateY(-4px) scale(1.012); box-shadow: var(--shadow-lift); }
+.card:active { transform: scale(0.975); }
+.card.removing {
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+}
+
+.card .thumb {
+  aspect-ratio: 16 / 10;
+  border-radius: var(--r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: var(--sp-3);
+}
+.card .thumb .glyph {
+  font-size: 2.6rem;
+  font-weight: 700;
+  font-family: "Quicksand", sans-serif;
+  color: var(--glyph-on-thumb);
+  text-shadow: 0 2px 14px rgba(0,0,0,0.18);
+  z-index: 1;
+}
+.card .thumb::after {
+  /* subtle sheen */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.22), transparent 55%);
+}
+.card .card-title {
+  font-weight: 600;
+  font-size: var(--fs-headline);
+  letter-spacing: -0.01em;
+  margin: 0 0 2px;
+  padding: 0 var(--sp-1);
+}
+.card .card-sub {
+  font-size: var(--fs-footnote);
+  color: var(--text-secondary);
+  margin: 0 0 var(--sp-1);
+  padding: 0 var(--sp-1);
+}
+
+/* hover delete */
+.card .delete-btn {
+  position: absolute;
+  top: 18px; right: 18px;
+  width: 30px; height: 30px;
+  border-radius: var(--r-pill);
+  border: none;
+  background: rgba(20, 18, 30, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity var(--dur-fast), transform var(--dur-fast) var(--ease-spring);
+  z-index: 3;
+}
+.card:hover .delete-btn,
+.card:focus-within .delete-btn { opacity: 1; transform: scale(1); }
+.card .delete-btn:hover { background: #E5484D; }
+.card .delete-btn svg { width: 16px; height: 16px; }
+
+/* Empty state */
+.empty {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-4);
+  padding: var(--sp-10) var(--sp-6);
+  max-width: 420px;
+  margin: 8vh auto 0;
+}
+.empty.show { display: flex; }
+.empty .empty-art {
+  width: 120px; height: 120px;
+  border-radius: var(--r-xl);
+  background: linear-gradient(140deg, var(--bg-tint-b), var(--bg-tint-c));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-soft);
+  color: var(--accent);
+}
+.empty .empty-art svg { width: 52px; height: 52px; }
+.empty h2 { margin: 0; font-size: var(--fs-title); font-weight: 700; }
+.empty p { margin: 0; color: var(--text-secondary); }
+.empty .btn-primary { margin-top: var(--sp-2); }
+
+.btn-primary {
+  appearance: none;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: var(--fs-headline);
+  padding: var(--sp-3) var(--sp-6);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  transition: transform var(--dur-fast) var(--ease-spring), background var(--dur-fast);
+}
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-primary:active { transform: scale(0.96); background: var(--accent-press); }
+.btn-primary svg { width: 19px; height: 19px; }
+
+/* dev toggle (toggle empty state) */
+.dev-toggle {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + var(--sp-4));
+  left: calc(env(safe-area-inset-left) + var(--sp-4));
+  z-index: 40;
+  font-size: var(--fs-caption);
+  color: var(--text-secondary);
+  background: var(--surface-strong);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--separator);
+  border-radius: var(--r-pill);
+  padding: var(--sp-2) var(--sp-3);
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+
+/* ============================================================
+   PLAYER (full-screen overlay)
+   ============================================================ */
+.player {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  flex-direction: column;
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.player.open { display: flex; animation: player-in var(--dur-med) var(--ease-soft); }
+@keyframes player-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.player-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding:
+    calc(env(safe-area-inset-top) + var(--sp-3))
+    calc(env(safe-area-inset-right) + var(--sp-4))
+    var(--sp-3)
+    calc(env(safe-area-inset-left) + var(--sp-4));
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--separator);
+  position: relative;
+  z-index: 2;
+  transition: transform var(--dur-med) var(--ease-soft),
+              opacity var(--dur-med) var(--ease-soft);
+}
+.player-bar .player-title {
+  position: absolute;
+  left: 0; right: 0;
+  text-align: center;
+  font-weight: 600;
+  font-size: var(--fs-headline);
+  pointer-events: none;
+}
+.player.immersive .player-bar {
+  transform: translateY(-110%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* reveal control in immersive */
+.reveal {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  z-index: 5;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-med), transform var(--dur-med) var(--ease-spring);
+}
+.player.immersive .reveal {
+  opacity: 0.65;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+.reveal:hover { opacity: 1 !important; }
+
+.stage-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6);
+  overflow: hidden;
+}
+.stage {
+  width: min(100%, 1000px);
+  aspect-ratio: 16 / 10;
+  border-radius: var(--r-xl);
+  background: linear-gradient(150deg, var(--bg-tint-a), var(--bg-tint-b) 55%, var(--bg-tint-c));
+  box-shadow: var(--shadow-lift);
+  border: 1px solid var(--surface-strong);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(24px, 5vw, 64px);
+  animation: stage-pop var(--dur-slow) var(--ease-spring);
+}
+@keyframes stage-pop {
+  from { transform: scale(0.94); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 80% 15%, rgba(255,255,255,0.25), transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(108,140,255,0.22), transparent 45%);
+}
+.slide-content { position: relative; z-index: 1; max-width: 620px; }
+.slide-eyebrow {
+  font-size: var(--fs-subhead);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 var(--sp-3);
+}
+.slide-h {
+  font-family: "Quicksand", sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.8rem, 4.5vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--sp-4);
+  color: var(--text);
+}
+.slide-body {
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 30ch;
+}
+.slide-dots {
+  position: absolute;
+  bottom: clamp(20px, 4vw, 40px);
+  left: clamp(24px, 5vw, 64px);
+  display: flex;
+  gap: 8px;
+  z-index: 1;
+}
+.slide-dots i {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--text-secondary);
+  opacity: 0.4;
+}
+.slide-dots i.on { opacity: 1; background: var(--accent); width: 22px; border-radius: 4px; }
+
+/* ============================================================
+   SETTINGS (grouped inset list)
+   ============================================================ */
+.settings-body {
+  max-width: 640px;
+  margin: 0 auto;
+  padding:
+    var(--sp-6)
+    calc(env(safe-area-inset-right) + var(--sp-5))
+    calc(env(safe-area-inset-bottom) + var(--sp-10))
+    calc(env(safe-area-inset-left) + var(--sp-5));
+}
+.group { margin-bottom: var(--sp-8); }
+.group-label {
+  font-size: var(--fs-footnote);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  padding: 0 var(--sp-4) var(--sp-2);
+}
+.inset {
+  background: var(--surface);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--surface-strong);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  min-height: 52px;
+}
+.row + .row { border-top: 1px solid var(--separator); }
+.row .row-label { flex: 1; font-size: var(--fs-callout); }
+.row .row-value { color: var(--text-secondary); font-size: var(--fs-callout); }
+.row.column { flex-direction: column; align-items: stretch; gap: var(--sp-3); }
+.row .row-note { color: var(--text-secondary); font-size: var(--fs-subhead); line-height: 1.5; }
+
+/* segmented control */
+.segmented {
+  display: inline-flex;
+  background: var(--separator);
+  border-radius: var(--r-pill);
+  padding: 3px;
+  gap: 2px;
+  width: 100%;
+}
+.segmented button {
+  flex: 1;
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-subhead);
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color var(--dur-fast), background var(--dur-med) var(--ease-soft);
+}
+.segmented button[aria-selected="true"] {
+  background: var(--surface-solid);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: var(--shadow-soft);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + var(--sp-6));
+  transform: translateX(-50%) translateY(20px);
+  z-index: 100;
+  background: var(--surface-strong);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--separator);
+  color: var(--text);
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-lift);
+  font-size: var(--fs-subhead);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-med), transform var(--dur-med) var(--ease-spring);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast svg { width: 18px; height: 18px; color: var(--accent); }
+
+/* ============================================================
+   CONFIRM SHEET (in-app, never browser confirm)
+   ============================================================ */
+.sheet-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(10, 8, 18, 0.4);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-med);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.sheet-scrim.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  width: min(440px, 100%);
+  margin: var(--sp-4);
+  margin-bottom: calc(env(safe-area-inset-bottom) + var(--sp-4));
+  background: var(--surface-strong);
+  -webkit-backdrop-filter: blur(30px) saturate(160%);
+  backdrop-filter: blur(30px) saturate(160%);
+  border: 1px solid var(--separator);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lift);
+  padding: var(--sp-6);
+  text-align: center;
+  transform: translateY(30px) scale(0.98);
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+.sheet-scrim.open .sheet { transform: translateY(0) scale(1); }
+@media (min-width: 560px) {
+  .sheet-scrim { align-items: center; }
+}
+.sheet h3 { margin: 0 0 var(--sp-2); font-size: var(--fs-title); font-weight: 700; }
+.sheet p { margin: 0 0 var(--sp-5); color: var(--text-secondary); font-size: var(--fs-callout); }
+.sheet .sheet-actions { display: flex; flex-direction: column; gap: var(--sp-2); }
+.sheet button {
+  appearance: none;
+  border: none;
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+  font-size: var(--fs-headline);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-spring), opacity var(--dur-fast);
+}
+.sheet button:active { transform: scale(0.97); }
+.sheet .danger { background: #E5484D; color: #fff; }
+.sheet .cancel { background: var(--separator); color: var(--text); }
+
+/* ============================================================
+   ACCESSIBILITY MEDIA QUERIES
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .blob.a, .blob.b, .blob.c { animation: none !important; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .navbar, .player-bar, .player, .toast, .sheet, .sheet-scrim { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  :root, :root[data-theme="light"] {
+    --surface: #FFFFFF;
+    --surface-strong: #FFFFFF;
+    --scrim: #F7F5F2;
+  }
+  :root[data-theme="dark"] {
+    --surface: #1A1824;
+    --surface-strong: #1A1824;
+    --scrim: #0C0B12;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root[data-theme="auto"] {
+      --surface: #1A1824;
+      --surface-strong: #1A1824;
+      --scrim: #0C0B12;
+    }
+  }
+  .card, .inset { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+</style>
+</head>
+<body>
+
+<!-- Ambient aurora -->
+<div class="aurora" aria-hidden="true">
+  <div class="blob a"></div>
+  <div class="blob b"></div>
+  <div class="blob c"></div>
+</div>
+
+<div class="app">
+
+  <!-- ============== LIBRARY ============== -->
+  <section class="screen active" id="screen-library" aria-label="Library">
+    <header class="navbar">
+      <span class="nav-title">Decks</span>
+      <button class="icon-btn" id="btn-settings" aria-label="Settings"></button>
+      <button class="icon-btn" id="btn-import" aria-label="Import deck"></button>
+    </header>
+
+    <div class="library-head">
+      <h1>Decks</h1>
+      <p>Your offline presentation library</p>
+    </div>
+
+    <div class="grid" id="deck-grid" role="list"></div>
+
+    <div class="empty" id="empty-state">
+      <div class="empty-art" id="empty-art"></div>
+      <h2>No decks yet</h2>
+      <p>Import a self-contained HTML deck to start presenting. Everything stays on your device.</p>
+      <button class="btn-primary" id="empty-import"><span id="empty-import-icon"></span> Import a deck</button>
+    </div>
+  </section>
+
+  <!-- ============== SETTINGS ============== -->
+  <section class="screen" id="screen-settings" aria-label="Settings">
+    <header class="navbar with-back">
+      <button class="text-btn" id="settings-back" aria-label="Back to Library">
+        <span id="settings-back-icon"></span> Library
+      </button>
+      <span class="nav-title">Settings</span>
+    </header>
+
+    <div class="settings-body">
+      <div class="group">
+        <div class="group-label">Appearance</div>
+        <div class="inset">
+          <div class="row column">
+            <div class="segmented" id="theme-seg" role="tablist" aria-label="Appearance">
+              <button role="tab" data-theme-val="auto"  aria-selected="true">Auto</button>
+              <button role="tab" data-theme-val="light" aria-selected="false">Light</button>
+              <button role="tab" data-theme-val="dark"  aria-selected="false">Dark</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label">About</div>
+        <div class="inset">
+          <div class="row"><span class="row-label">Version</span><span class="row-value">0.1.0</span></div>
+          <div class="row"><span class="row-label">App ID</span><span class="row-value">org.opendeck</span></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label">Privacy</div>
+        <div class="inset">
+          <div class="row"><span class="row-note">OpenDeck stores everything on your device. Nothing is collected or sent.</span></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label">Open source</div>
+        <div class="inset">
+          <div class="row"><span class="row-label">fflate</span><span class="row-value">MIT</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============== PLAYER ============== -->
+<div class="player" id="player" role="dialog" aria-modal="true" aria-label="Deck player">
+  <div class="player-bar">
+    <button class="text-btn" id="player-back" aria-label="Back to Library">
+      <span id="player-back-icon"></span> Library
+    </button>
+    <span class="player-title" id="player-title">Deck</span>
+    <span style="flex:1"></span>
+    <button class="icon-btn" id="player-immersive" aria-label="Enter immersive mode"></button>
+  </div>
+
+  <button class="icon-btn reveal" id="player-reveal" aria-label="Show controls"></button>
+
+  <div class="stage-wrap">
+    <div class="stage" id="stage">
+      <div class="slide-content">
+        <p class="slide-eyebrow" id="slide-eyebrow">OpenDeck</p>
+        <h1 class="slide-h" id="slide-h">A calmer way to present.</h1>
+        <p class="slide-body" id="slide-body">Self-contained decks, offline first. No clouds, no clutter — just your story.</p>
+      </div>
+      <div class="slide-dots"><i class="on"></i><i></i><i></i><i></i></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============== TOAST ============== -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toast-icon"></span><span id="toast-msg">Imported</span>
+</div>
+
+<!-- ============== CONFIRM SHEET ============== -->
+<div class="sheet-scrim" id="confirm-scrim">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <h3 id="confirm-title">Delete deck?</h3>
+    <p id="confirm-msg">This will remove the deck from your library. This can’t be undone.</p>
+    <div class="sheet-actions">
+      <button class="danger" id="confirm-delete">Delete</button>
+      <button class="cancel" id="confirm-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<button class="dev-toggle" id="dev-toggle">Toggle empty state</button>
+
+<script>
+/* ============================================================
+   INLINE SVG ICONS (with Lucide CDN fallback hydration)
+   ============================================================ */
+const ICONS = {
+  "chevron-left": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+  "chevron-down": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+  "plus": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>',
+  "settings": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
+  "trash": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  "x": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  "maximize": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>',
+  "check": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  "import": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>',
+  "layers": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18 8.66 4.32a1 1 0 0 1 0 1.78l-8.66 4.32a2 2 0 0 1-1.66 0L2.5 8.28a1 1 0 0 1 0-1.78l8.66-4.32a2 2 0 0 1 1.66 0Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>'
+};
+function icon(name){ return ICONS[name] || ""; }
+function setIcon(id, name){ const el = document.getElementById(id); if(el) el.innerHTML = icon(name); }
+function setIconQ(sel, name){ const el = document.querySelector(sel); if(el) el.innerHTML = icon(name); }
+
+setIcon("btn-settings","settings");
+setIcon("btn-import","plus");
+setIcon("settings-back-icon","chevron-left");
+setIcon("player-back-icon","chevron-left");
+setIcon("player-immersive","maximize");
+setIcon("player-reveal","chevron-down");
+setIcon("toast-icon","check");
+setIcon("empty-art","layers");
+setIcon("empty-import-icon","import");
+
+/* Pull Lucide from CDN too (so the app "fetches" icons); upgrades inline ones if it loads */
+(function loadLucide(){
+  const s = document.createElement("script");
+  s.src = "https://unpkg.com/lucide@latest";
+  s.onload = function(){ try { if (window.lucide) window.lucide.createIcons(); } catch(e){} };
+  s.onerror = function(){ /* inline SVGs already present — graceful fallback */ };
+  document.head.appendChild(s);
+})();
+
+/* ============================================================
+   SAMPLE DATA
+   ============================================================ */
+const GRADIENTS = [
+  "linear-gradient(140deg,#6C8CFF,#9C6CFF)",
+  "linear-gradient(140deg,#FF9D7A,#FF6CA8)",
+  "linear-gradient(140deg,#4EC8B0,#6C8CFF)",
+  "linear-gradient(140deg,#F6B36B,#E5746C)",
+  "linear-gradient(140deg,#7AD0FF,#6C8CFF)",
+  "linear-gradient(140deg,#A06CFF,#FF6CA8)"
+];
+let decks = [
+  { id:1, title:"Welcome to OpenDeck", author:"OpenDeck", v:"1.0", glyph:"✦",
+    eyebrow:"Getting Started", h:"A calmer way to present.", body:"Self-contained decks, offline first. No clouds, no clutter — just your story." },
+  { id:2, title:"Q3 Product Review", author:"Mira Solberg", v:"1.0", glyph:"Q3",
+    eyebrow:"Quarterly", h:"Strong quarter, clear momentum.", body:"Revenue up, churn down, and three big bets landing in Q4." },
+  { id:3, title:"Design Principles", author:"Studio North", v:"2.1", glyph:"◑",
+    eyebrow:"Foundations", h:"Calm, clear, considered.", body:"The three principles every screen in our product should honour." },
+  { id:4, title:"Annual Report 2025", author:"Finance Team", v:"1.0", glyph:"₂₅",
+    eyebrow:"FY2025", h:"A year of disciplined growth.", body:"Highlights, headwinds, and where we invest next." },
+  { id:5, title:"Onboarding 101", author:"People Ops", v:"3.0", glyph:"☺",
+    eyebrow:"Welcome", h:"Your first two weeks.", body:"Everything you need to feel at home and start shipping." },
+  { id:6, title:"Roadmap", author:"Product", v:"1.2", glyph:"➜",
+    eyebrow:"Looking ahead", h:"Where we’re headed.", body:"Themes, not promises — the shape of the next two quarters." }
+];
+
+/* ============================================================
+   RENDER LIBRARY
+   ============================================================ */
+const grid = document.getElementById("deck-grid");
+const emptyState = document.getElementById("empty-state");
+
+function renderDecks(){
+  grid.innerHTML = "";
+  decks.forEach((d, i) => {
+    const card = document.createElement("button");
+    card.className = "card";
+    card.setAttribute("role","listitem");
+    card.setAttribute("aria-label", `${d.title}, ${d.author}, version ${d.v}`);
+    card.dataset.id = d.id;
+    card.innerHTML = `
+      <div class="thumb" style="background:${GRADIENTS[i % GRADIENTS.length]}">
+        <span class="glyph">${d.glyph}</span>
+      </div>
+      <p class="card-title">${d.title}</p>
+      <p class="card-sub">${d.author} · v${d.v}</p>
+      <button class="delete-btn" aria-label="Delete ${d.title}">${icon("x")}</button>
+    `;
+    // open player
+    card.addEventListener("click", (e) => {
+      if (e.target.closest(".delete-btn")) return;
+      openPlayer(d);
+    });
+    // keyboard Enter/Space already native for <button>; ensure space activates
+    // delete via hover button
+    card.querySelector(".delete-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      askDelete(d.id);
+    });
+    // long-press delete
+    let timer = null;
+    const start = () => { timer = setTimeout(() => askDelete(d.id), 550); };
+    const cancel = () => { if (timer) clearTimeout(timer); };
+    card.addEventListener("touchstart", start, {passive:true});
+    card.addEventListener("touchend", cancel);
+    card.addEventListener("touchmove", cancel, {passive:true});
+    card.addEventListener("mousedown", start);
+    card.addEventListener("mouseup", cancel);
+    card.addEventListener("mouseleave", cancel);
+    grid.appendChild(card);
+  });
+  updateEmptyVisibility();
+}
+
+function updateEmptyVisibility(){
+  const forced = emptyState.dataset.forced === "1";
+  const isEmpty = decks.length === 0 || forced;
+  emptyState.classList.toggle("show", isEmpty);
+  grid.style.display = isEmpty ? "none" : "";
+}
+
+/* ============================================================
+   PLAYER
+   ============================================================ */
+const player = document.getElementById("player");
+let lastFocused = null;
+
+function openPlayer(d){
+  lastFocused = document.activeElement;
+  document.getElementById("player-title").textContent = d.title;
+  document.getElementById("slide-eyebrow").textContent = d.eyebrow;
+  document.getElementById("slide-h").textContent = d.h;
+  document.getElementById("slide-body").textContent = d.body;
+  player.classList.add("open");
+  player.classList.remove("immersive");
+  document.getElementById("player-immersive").focus();
+}
+function closePlayer(){
+  player.classList.remove("open","immersive");
+  if (lastFocused) lastFocused.focus();
+}
+function toggleImmersive(force){
+  const on = force !== undefined ? force : !player.classList.contains("immersive");
+  player.classList.toggle("immersive", on);
+  document.getElementById("player-immersive")
+    .setAttribute("aria-label", on ? "Exit immersive mode" : "Enter immersive mode");
+}
+
+document.getElementById("player-back").addEventListener("click", closePlayer);
+document.getElementById("player-immersive").addEventListener("click", () => toggleImmersive());
+document.getElementById("player-reveal").addEventListener("click", () => toggleImmersive(false));
+
+/* ============================================================
+   SETTINGS NAV
+   ============================================================ */
+function show(screenId){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(screenId).classList.add("active");
+  window.scrollTo(0,0);
+}
+document.getElementById("btn-settings").addEventListener("click", () => show("screen-settings"));
+document.getElementById("settings-back").addEventListener("click", () => show("screen-library"));
+
+/* ============================================================
+   THEMING
+   ============================================================ */
+const seg = document.getElementById("theme-seg");
+function applyTheme(val){
+  document.documentElement.setAttribute("data-theme", val);
+  try { localStorage.setItem("opendeck-theme", val); } catch(e){}
+  seg.querySelectorAll("button").forEach(b =>
+    b.setAttribute("aria-selected", String(b.dataset.themeVal === val)));
+}
+seg.querySelectorAll("button").forEach(b =>
+  b.addEventListener("click", () => applyTheme(b.dataset.themeVal)));
+(function initTheme(){
+  let saved = "auto";
+  try { saved = localStorage.getItem("opendeck-theme") || "auto"; } catch(e){}
+  applyTheme(saved);
+})();
+
+/* ============================================================
+   IMPORT (toast)
+   ============================================================ */
+const toast = document.getElementById("toast");
+let toastTimer = null;
+function showToast(msg){
+  document.getElementById("toast-msg").textContent = msg;
+  toast.classList.add("show");
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+}
+function doImport(){
+  const i = decks.length;
+  const id = Date.now();
+  decks.push({ id, title:"Imported Deck", author:"You", v:"1.0", glyph:"＋",
+    eyebrow:"New", h:"Freshly imported.", body:"This deck is ready to present." });
+  if (emptyState.dataset.forced === "1") emptyState.dataset.forced = "0";
+  renderDecks();
+  showToast("Deck imported");
+}
+document.getElementById("btn-import").addEventListener("click", doImport);
+document.getElementById("empty-import").addEventListener("click", doImport);
+
+/* ============================================================
+   DELETE CONFIRM SHEET
+   ============================================================ */
+const scrim = document.getElementById("confirm-scrim");
+let pendingDeleteId = null;
+let confirmLastFocused = null;
+
+function askDelete(id){
+  pendingDeleteId = id;
+  const d = decks.find(x => x.id === id);
+  document.getElementById("confirm-msg").textContent =
+    `“${d ? d.title : "This deck"}” will be removed from your library. This can’t be undone.`;
+  confirmLastFocused = document.activeElement;
+  scrim.classList.add("open");
+  document.getElementById("confirm-cancel").focus();
+}
+function closeConfirm(){
+  scrim.classList.remove("open");
+  pendingDeleteId = null;
+  if (confirmLastFocused) confirmLastFocused.focus();
+}
+document.getElementById("confirm-cancel").addEventListener("click", closeConfirm);
+scrim.addEventListener("click", (e) => { if (e.target === scrim) closeConfirm(); });
+document.getElementById("confirm-delete").addEventListener("click", () => {
+  const id = pendingDeleteId;
+  scrim.classList.remove("open");
+  const cardEl = grid.querySelector(`.card[data-id="${id}"]`);
+  if (cardEl){
+    cardEl.classList.add("removing");
+    setTimeout(() => {
+      decks = decks.filter(x => x.id !== id);
+      renderDecks();
+    }, 300);
+  } else {
+    decks = decks.filter(x => x.id !== id);
+    renderDecks();
+  }
+  pendingDeleteId = null;
+});
+
+/* ============================================================
+   KEYBOARD
+   ============================================================ */
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape"){
+    if (scrim.classList.contains("open")){ closeConfirm(); return; }
+    if (player.classList.contains("open")){
+      if (player.classList.contains("immersive")) { toggleImmersive(false); }
+      else { closePlayer(); }
+      return;
+    }
+    if (document.getElementById("screen-settings").classList.contains("active")){
+      show("screen-library");
+    }
+  }
+});
+
+/* ============================================================
+   DEV: toggle empty state
+   ============================================================ */
+document.getElementById("dev-toggle").addEventListener("click", () => {
+  emptyState.dataset.forced = emptyState.dataset.forced === "1" ? "0" : "1";
+  updateEmptyVisibility();
+});
+
+/* boot */
+renderDecks();
+</script>
+</body>
+</html>

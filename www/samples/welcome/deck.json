@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "id": "welcome",
+  "title": "Welcome to OpenDeck",
+  "entry": "index.html",
+  "orientation": "any",
+  "author": "OpenDeck",
+  "version": "1.0.0"
+}

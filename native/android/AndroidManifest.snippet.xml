@@ -1,0 +1,48 @@
+<!--
+  Paste these <intent-filter>s inside the main <activity> in
+  android/app/src/main/AndroidManifest.xml so OpenDeck appears in the share
+  sheet / "open with" for .deck and .zip files.
+
+  Android matches file types by a mix of MIME, scheme, host and pathPattern;
+  the duplicated filters below cover content:// and file:// URIs from different
+  providers. Keep the custom MIME for strong .deck association.
+-->
+
+<!-- Open a .deck via VIEW (file managers, downloads) -->
+<intent-filter android:label="Open in OpenDeck">
+  <action android:name="android.intent.action.VIEW" />
+  <category android:name="android.intent.category.DEFAULT" />
+  <category android:name="android.intent.category.BROWSABLE" />
+  <data android:scheme="content" android:mimeType="application/x-opendeck" />
+  <data android:scheme="file" android:mimeType="application/x-opendeck" />
+</intent-filter>
+
+<!-- Match by .deck extension when MIME is generic/unknown -->
+<intent-filter android:label="Open in OpenDeck">
+  <action android:name="android.intent.action.VIEW" />
+  <category android:name="android.intent.category.DEFAULT" />
+  <category android:name="android.intent.category.BROWSABLE" />
+  <data android:scheme="content" />
+  <data android:scheme="file" />
+  <data android:host="*" />
+  <data android:mimeType="*/*" />
+  <data android:pathPattern=".*\\.deck" />
+</intent-filter>
+
+<!-- Receive a shared .deck/.zip from the share sheet -->
+<intent-filter android:label="Import to OpenDeck">
+  <action android:name="android.intent.action.SEND" />
+  <category android:name="android.intent.category.DEFAULT" />
+  <data android:mimeType="application/x-opendeck" />
+  <data android:mimeType="application/zip" />
+</intent-filter>
+
+<!-- Optional deep-link scheme for "open a specific deck" links -->
+<!--
+<intent-filter android:label="OpenDeck link">
+  <action android:name="android.intent.action.VIEW" />
+  <category android:name="android.intent.category.DEFAULT" />
+  <category android:name="android.intent.category.BROWSABLE" />
+  <data android:scheme="opendeck" />
+</intent-filter>
+-->

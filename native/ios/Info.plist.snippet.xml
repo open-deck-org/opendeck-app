@@ -1,0 +1,64 @@
+<!--
+  Paste these into ios/App/App/Info.plist (inside the top-level <dict>).
+  They register OpenDeck as a handler for .deck packages (custom UTI, strong
+  association) and as a secondary handler for .zip (public type, shared).
+-->
+
+<!-- Exported type: our own .deck format -->
+<key>UTExportedTypeDeclarations</key>
+<array>
+  <dict>
+    <key>UTTypeIdentifier</key>
+    <string>org.opendeck.deck</string>
+    <key>UTTypeDescription</key>
+    <string>OpenDeck Presentation</string>
+    <key>UTTypeConformsTo</key>
+    <array>
+      <string>public.zip-archive</string>
+      <string>public.data</string>
+    </array>
+    <key>UTTypeTagSpecification</key>
+    <dict>
+      <key>public.filename-extension</key>
+      <array><string>deck</string></array>
+      <key>public.mime-type</key>
+      <array><string>application/x-opendeck</string></array>
+    </dict>
+  </dict>
+</array>
+
+<!-- Document types this app will open -->
+<key>CFBundleDocumentTypes</key>
+<array>
+  <dict>
+    <key>CFBundleTypeName</key>
+    <string>OpenDeck Presentation</string>
+    <key>LSHandlerRank</key>
+    <string>Owner</string>
+    <key>LSItemContentTypes</key>
+    <array><string>org.opendeck.deck</string></array>
+  </dict>
+  <dict>
+    <key>CFBundleTypeName</key>
+    <string>Zip Archive</string>
+    <key>LSHandlerRank</key>
+    <string>Alternate</string>
+    <key>LSItemContentTypes</key>
+    <array><string>public.zip-archive</string></array>
+  </dict>
+</array>
+
+<!-- Optional: a deck:// deep-link scheme for "open a specific deck" links.
+     NOTE: this is separate from the in-app deck:// content origin served by
+     DeckSchemeHandler; only declare it if you want external deep links. -->
+<!--
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLName</key>
+    <string>org.opendeck.link</string>
+    <key>CFBundleURLSchemes</key>
+    <array><string>opendeck</string></array>
+  </dict>
+</array>
+-->

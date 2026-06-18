@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Welcome to OpenDeck</title>
+  <style>
+    /* Zen / Paper — monochrome, type-led. Self-contained: system fonts only
+       (a deck must not depend on the shell). Auto light/dark via the OS. */
+    :root {
+      --bg: #FAFAF8; --ink: #1A1A1A; --soft: #6E6E68; --rule: rgba(26,26,26,0.18);
+      --serif: ui-serif, Georgia, "Times New Roman", serif;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0A0A0A; --ink: #F4F4EF; --soft: #9A9A92; --rule: rgba(245,245,240,0.22); }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--ink);
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+    #stage { position: fixed; inset: 0; }
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10vmin;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+    }
+    .slide.active { opacity: 1; transform: none; pointer-events: auto; }
+    .kicker {
+      font-size: clamp(11px, 1.8vmin, 14px);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--soft);
+      margin-bottom: 4vmin;
+    }
+    .slide h1 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: clamp(30px, 8vmin, 76px);
+      letter-spacing: -0.02em;
+      line-height: 1.08;
+    }
+    .slide h1 em { font-style: italic; }
+    .slide p {
+      font-size: clamp(15px, 2.6vmin, 22px);
+      color: var(--soft);
+      max-width: 26ch;
+      margin-top: 3.5vmin;
+      line-height: 1.55;
+    }
+    .rule { width: 2.5rem; height: 1px; background: var(--ink); opacity: 0.5; margin-top: 5vmin; }
+    .dots {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+      left: 0; right: 0;
+      display: flex; gap: 10px; justify-content: center;
+    }
+    .dots b { width: 6px; height: 6px; border-radius: 50%; background: var(--rule); transition: background 0.3s, transform 0.3s; }
+    .dots b.on { background: var(--ink); transform: scale(1.25); }
+    .hint {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 50px);
+      left: 0; right: 0; text-align: center;
+      font-size: 12px; letter-spacing: 0.04em; color: var(--soft);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .slide { transition-duration: 0.001ms; }
+    }
+  </style>
+</head>
+<body>
+  <main id="stage" aria-live="polite">
+    <section class="slide">
+      <p class="kicker">OpenDeck</p>
+      <h1>Clarity is a <em>kind of</em> generosity.</h1>
+      <p>Your HTML presentation, running like a native app — nothing to install, nothing to chase down.</p>
+      <div class="rule"></div>
+    </section>
+    <section class="slide">
+      <p class="kicker">Navigate</p>
+      <h1>Tap, or <em>swipe</em>.</h1>
+      <p>Tap the right half to advance, the left to go back. Arrow keys work too.</p>
+    </section>
+    <section class="slide">
+      <p class="kicker">Format</p>
+      <h1>One quiet <em>file</em>.</h1>
+      <p>This whole deck is a single <code>index.html</code>, packaged as <code>.deck</code> with a small <code>deck.json</code> manifest.</p>
+    </section>
+    <section class="slide">
+      <p class="kicker">Begin</p>
+      <h1>That's the <em>idea</em>.</h1>
+      <p>Import your own decks from the library to replace this one.</p>
+      <div class="rule"></div>
+    </section>
+  </main>
+
+  <div class="dots" id="dots"></div>
+  <div class="hint">← / → · tap edges · swipe</div>
+
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    const dotsWrap = document.getElementById('dots');
+    slides.forEach(() => dotsWrap.appendChild(document.createElement('b')));
+    const dots = [...dotsWrap.children];
+    let i = 0;
+
+    function show(n) {
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach((s, k) => s.classList.toggle('active', k === i));
+      dots.forEach((d, k) => d.classList.toggle('on', k === i));
+    }
+    const next = () => show(i + 1);
+    const prev = () => show(i - 1);
+
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowRight', 'ArrowDown', ' ', 'PageDown'].includes(e.key)) { e.preventDefault(); next(); }
+      if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); prev(); }
+    });
+    window.addEventListener('click', (e) => (e.clientX < innerWidth / 2 ? prev() : next()));
+
+    let x0 = null;
+    window.addEventListener('touchstart', (e) => (x0 = e.touches[0].clientX), { passive: true });
+    window.addEventListener('touchend', (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 40) (dx < 0 ? next() : prev());
+      x0 = null;
+    });
+
+    show(0);
+  </script>
+</body>
+</html>
