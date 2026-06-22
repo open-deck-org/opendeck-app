@@ -39,6 +39,15 @@ dist/welcome.deck                     # sample package (npm run build:sample)
 See `scripts/collect-dist.sh` — it prefers the ad-hoc-signed Catalyst app in
 `build/mac` over any signing-disabled DerivedData build.
 
+> ⚠️ **Rebuild `build/mac` after icon/asset/web changes.** Because collect prefers
+> `build/mac`, a plain Catalyst build (which lands in the default DerivedData) is
+> *not* picked up — you must re-run the [§ macOS](#macos-mac-catalyst) command
+> (`-derivedDataPath build/mac`). `collect-dist.sh` now prints each artifact's
+> build time and warns `⚠️ STALE` if it predates `Assets.xcassets`/`www`, so a
+> forgotten rebuild no longer slips through silently. If only the icon changed
+> and the build looks cached, force-recompile the catalog with
+> `xcodebuild clean` (Xcode's `actool` can reuse a stale `Assets.car`).
+
 ---
 
 ## Prerequisites (and what this machine had)
