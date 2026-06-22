@@ -35,8 +35,10 @@ final class DeckSchemeHandler: NSObject, WKURLSchemeHandler {
         let deckRoot = root.appendingPathComponent(deckId, isDirectory: true).standardizedFileURL
         let fileURL = deckRoot.appendingPathComponent(rel).standardizedFileURL
 
-        // Path-traversal guard: never serve outside the deck's own folder.
-        guard fileURL.path.hasPrefix(deckRoot.path) else {
+        // Path-traversal guard: never serve outside the deck's own folder. Use a
+        // trailing separator so deck "a" can't reach sibling "ab" via a prefix match.
+        let prefix = deckRoot.path.hasSuffix("/") ? deckRoot.path : deckRoot.path + "/"
+        guard fileURL.path == deckRoot.path || fileURL.path.hasPrefix(prefix) else {
             task.didFailWithError(URLError(.noPermissionsToReadFile)); return
         }
 
@@ -52,12 +54,14 @@ final class DeckSchemeHandler: NSObject, WKURLSchemeHandler {
             "Content-Type": Self.mime(for: fileURL.pathExtension),
             "Cache-Control": "no-store",
             "X-Content-Type-Options": "nosniff",
-            // A deck may load its own bundled resources, but cannot phone home.
+            // A deck may load its OWN bundled resources ('self' == deck://<id>),
+            // but cannot phone home or reach another deck's origin (no scheme-wide
+            // `deck:` token, no remote hosts).
             "Content-Security-Policy":
-                "default-src 'self' deck: data: blob:; img-src 'self' deck: data: blob:; " +
-                "media-src 'self' deck: data: blob:; font-src 'self' deck: data:; " +
-                "style-src 'self' 'unsafe-inline' deck:; " +
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' deck:; connect-src 'self' deck: data: blob:"
+                "default-src 'self' data: blob:; img-src 'self' data: blob:; " +
+                "media-src 'self' data: blob:; font-src 'self' data:; " +
+                "style-src 'self' 'unsafe-inline'; " +
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' data: blob:"
         ]
         let resp = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: headers)!
         task.didReceive(resp)

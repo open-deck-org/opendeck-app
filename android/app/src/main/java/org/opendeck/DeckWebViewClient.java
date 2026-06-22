@@ -20,18 +20,30 @@ import java.util.Map;
  * Serves deck content from a DISTINCT origin so untrusted deck JS stays isolated
  * from the Capacitor shell (https://localhost) and the bridge.
  *
- *   Shell:  https://localhost/...                  (Capacitor local server)
- *   Decks:  https://decks.opendeck/<id>/<path>    (intercepted here)
+ *   Shell:  https://localhost/...                       (Capacitor local server)
+ *   Decks:  https://<id>.decks.opendeck/<path>          (intercepted here)
+ *
+ * Each deck gets its OWN subdomain, so each deck is a distinct web origin. That
+ * isolates decks from the shell AND from each other: deck A cannot read deck B's
+ * origin-scoped storage (localStorage/IndexedDB/cookies) or fetch its files.
+ * <id> is the content hash (25-char base36), a valid single DNS label.
  *
  * Files are read from filesDir/decks/<id>/... — where the JS store's Filesystem
  * backend (Directory.Library) writes imported packages on Android.
  *
- * Also accepts deck://<id>/<path> for parity with iOS, though the app uses the
- * https host on Android (player.js).
+ * Also accepts deck://<id>/<path> for parity with iOS.
  */
 public class DeckWebViewClient extends BridgeWebViewClient {
 
-    private static final String DECK_HOST = "decks.opendeck";
+    private static final String DECK_DOMAIN = ".decks.opendeck";
+    // A deck loads only its own (same-origin) subresources and must not phone
+    // home — mirrors the iOS handler's CSP. 'self' resolves to the deck's own
+    // subdomain origin; no remote hosts are allowed in connect-src/img-src/etc.
+    private static final String DECK_CSP =
+        "default-src 'self' data: blob:; img-src 'self' data: blob:; " +
+        "media-src 'self' data: blob:; font-src 'self' data:; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' data: blob:";
     private final File root;
 
     public DeckWebViewClient(Bridge bridge) {
@@ -42,36 +54,41 @@ public class DeckWebViewClient extends BridgeWebViewClient {
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
         Uri url = request.getUrl();
+        String host = url.getHost() == null ? "" : url.getHost();
         boolean isDeckScheme = "deck".equals(url.getScheme());
-        boolean isDeckHost = "https".equals(url.getScheme()) && DECK_HOST.equals(url.getHost());
+        boolean isDeckHost = "https".equals(url.getScheme()) && host.endsWith(DECK_DOMAIN);
         if (!isDeckScheme && !isDeckHost) {
             return super.shouldInterceptRequest(view, request); // shell assets
         }
 
         try {
             List<String> segments = url.getPathSegments();
-            String deckId;
+            // deck://<id>/<path>           -> id is the host
+            // https://<id>.decks.opendeck/ -> id is the leading subdomain label
+            String deckId = isDeckScheme
+                    ? host
+                    : host.substring(0, host.length() - DECK_DOMAIN.length());
             StringBuilder rel = new StringBuilder();
-
-            if (isDeckScheme) {
-                deckId = url.getHost();                 // deck://<id>/<path>
-                for (int i = 0; i < segments.size(); i++) appendSeg(rel, segments.get(i));
-            } else {
-                deckId = segments.isEmpty() ? "" : segments.get(0); // /<id>/<path>
-                for (int i = 1; i < segments.size(); i++) appendSeg(rel, segments.get(i));
-            }
+            for (int i = 0; i < segments.size(); i++) appendSeg(rel, segments.get(i));
             String relPath = rel.length() == 0 ? "index.html" : rel.toString();
 
             File deckRoot = new File(root, deckId).getCanonicalFile();
             File target = new File(deckRoot, relPath).getCanonicalFile();
 
-            // Path-traversal guard + existence.
-            if (!target.getPath().startsWith(deckRoot.getPath()) || !target.exists()) {
+            // Path-traversal guard (trailing separator so "/a" can't match "/ab")
+            // + existence. deckId itself is a single hash label, so it cannot
+            // contain separators to escape `root`.
+            String prefix = deckRoot.getPath() + File.separator;
+            boolean inRoot = target.getPath().equals(deckRoot.getPath()) || target.getPath().startsWith(prefix);
+            if (deckId.isEmpty() || !inRoot || !target.exists()) {
                 return notFound();
             }
 
             Map<String, String> headers = new HashMap<>();
-            headers.put("Access-Control-Allow-Origin", "*");
+            // No Access-Control-Allow-Origin: each deck is its own origin and only
+            // loads its own (same-origin) assets. Omitting CORS means a sibling
+            // deck origin cannot read this deck's files via fetch().
+            headers.put("Content-Security-Policy", DECK_CSP);
             headers.put("Cache-Control", "no-store");
             headers.put("X-Content-Type-Options", "nosniff");
 

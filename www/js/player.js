@@ -17,16 +17,20 @@
 import { isNative, platformName } from './platform.js';
 
 // Deck content is served from a DIFFERENT origin than the shell on every
-// platform, so untrusted deck JS stays isolated from the Capacitor bridge:
-//   ios / macOS (Catalyst): deck://         (WKURLSchemeHandler)
-//   android:                https host       (WebView shouldInterceptRequest)
-//   web / PWA:              same-origin path  (service worker)
-export const ANDROID_DECK_HOST = 'https://decks.opendeck';
+// platform, so untrusted deck JS stays isolated from the Capacitor bridge —
+// AND each deck gets its OWN origin so decks are isolated from each other:
+//   ios / macOS (Catalyst): deck://<id>/                 (WKURLSchemeHandler)
+//   android:                https://<id>.decks.opendeck/  (WebView intercept)
+//   web / PWA:              same-origin path              (service worker)
+// On native the per-deck origin (distinct host = distinct origin) means deck A
+// cannot read deck B's storage or files. `manifest.id` is the content hash, a
+// 25-char base36 string — a valid DNS label, so it works as a subdomain.
+export const ANDROID_DECK_DOMAIN = 'decks.opendeck';
 
 export function deckUrl(manifest, sub) {
   const path = sub || manifest.entry || 'index.html';
   const p = platformName();
-  if (p === 'android') return `${ANDROID_DECK_HOST}/${manifest.id}/${path}`;
+  if (p === 'android') return `https://${manifest.id}.${ANDROID_DECK_DOMAIN}/${path}`;
   if (isNative()) return `deck://${manifest.id}/${path}`;   // ios + macOS
   return `${location.origin}/__deck__/${manifest.id}/${path}`;
 }

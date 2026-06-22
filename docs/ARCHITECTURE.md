@@ -16,10 +16,15 @@ clean ingestion + library experience.
 
 ```
 Shell origin          Deck origin
-capacitor:// (iOS)    deck://<id>/        (iOS / macOS Catalyst)
-https://localhost     https://decks.opendeck/<id>/  (Android)
-http://localhost:5173 /__deck__/<id>/     (web, via service worker)
+capacitor:// (iOS)    deck://<id>/                  (iOS / macOS Catalyst)
+https://localhost     https://<id>.decks.opendeck/  (Android)
+http://localhost:5173 /__deck__/<id>/               (web, via service worker)
 ```
+
+`<id>` is a **content hash** of the deck's files (25-char base36), not an
+author-chosen name — see "Deck identity" below. On native each deck therefore
+gets a **distinct origin** (its own host/subdomain), so decks are isolated from
+each other, not just from the shell.
 
 The **shell** (deck library, import, player chrome) lives in `www/` and has
 access to the Capacitor bridge and native plugins. A **deck** is untrusted,
@@ -36,10 +41,16 @@ The strength of isolation differs by platform, because of a hard browser
 constraint: **a service worker cannot control a sandboxed iframe that has an
 opaque origin** (i.e. one without `allow-same-origin`). So:
 
-| | Deck origin | vs. shell origin | Isolation |
-|---|---|---|---|
-| **Native** (iOS/macOS/Android) | `deck://<id>` / distinct host | different | **full** — deck is cross-origin, cannot reach `Capacitor.Plugins`, the shell DOM, or `window.parent` |
-| **Web/PWA** | same origin, `/__deck__/<id>` path | same | partial — the SW must control the frame, so it's same-origin; the deck *could* read the shell DOM, but there is **no native bridge in a browser**, so nothing sensitive is exposed |
+| | Deck origin | vs. shell | vs. other decks | Isolation |
+|---|---|---|---|---|
+| **Native** (iOS/macOS/Android) | `deck://<id>` / `<id>.decks.opendeck` (distinct host per deck) | different | **different** | **full** — cross-origin to the shell (no `Capacitor.Plugins`, shell DOM, or `window.parent`) *and* cross-origin to every other deck (no shared storage, can't fetch another deck's files) |
+| **Web/PWA** | same origin, `/__deck__/<id>` path | same | same | partial — the SW must control the frame, so all decks share the shell origin; acceptable because a browser has **no native bridge** to protect. Not a device build. |
+
+Per-deck isolation on native rests on two things: (1) the deck id is a **distinct
+host** (`deck://<id>` or the `<id>` subdomain), so two decks are different
+origins → separate storage partitions and CORS-separated; (2) the handlers send
+**no `Access-Control-Allow-Origin`** and a CSP without remote/cross-deck tokens,
+so a deck can fetch only its own same-origin assets and cannot phone home.
 
 The design point: untrusted decks only ever run with bridge access **on
 device**, and there the deck:// origin gives true cross-origin isolation. The
@@ -90,14 +101,37 @@ device. Add Vite later if the shell grows; nothing here depends on its absence.
 | Android | WebView (https://localhost) | `DeckWebViewClient` intercept | yes | — |
 | Web / PWA | browser | `sw.js` | no | dev + fallback |
 
+## Deck identity (content-addressed)
+
+A deck's storage folder and origin id are a **128-bit SHA-256 of its normalized
+file tree**, encoded base36 to a 25-char, lowercase, DNS-label-safe string
+(`www/js/unzip.js` → `contentId`). The author-supplied `manifest.id` is **not**
+used for identity — only as a display-name fallback. Consequences:
+
+- **No identity hijack / overwrite.** The folder a deck occupies is decided by
+  its own bytes, so a publisher cannot pick another deck's id to overwrite or
+  partially clobber it (e.g. ship a fake "v2.0"). Different bytes → different id
+  → a separate, isolated folder. Import is create-if-absent, never overwrite.
+- **Dedup.** Re-importing byte-identical content reuses the same folder (recency
+  refreshed) instead of duplicating.
+- base36 (not base62) so the id is case-insensitive-safe — it doubles as a DNS
+  subdomain label (Android) and a case-insensitive-filesystem folder (iOS APFS),
+  where mixed-case would collide.
+
 ## Security model summary
 
-- Deck code runs in a sandboxed, cross-origin iframe — no bridge access.
+- Deck code runs in a sandboxed iframe at its **own origin** — no bridge access,
+  and isolated from every other deck (distinct host per deck on native).
+- Identity is **content-addressed** (above): no cross-deck overwrite/hijack.
 - Native handlers enforce a **path-traversal guard** (never serve outside
-  `decks/<id>/`).
-- Native handlers send a restrictive **CSP** (`default-src 'self' deck: …`) so a
-  deck can load its own assets but cannot exfiltrate to the network. Loosen
+  `decks/<id>/`; the prefix check uses a trailing separator so `…/a` can't match
+  sibling `…/ab`).
+- Native handlers send a restrictive **CSP** (`default-src 'self' data: blob:`,
+  no remote hosts, no scheme-wide `deck:` token) so a deck can load only its own
+  same-origin assets and cannot exfiltrate or reach a sibling deck. Loosen
   `connect-src` only if you intentionally allow online decks.
+- Native handlers send **no `Access-Control-Allow-Origin`**, so a sibling deck
+  origin cannot read another deck's files via `fetch()`.
 - The shell validates the manifest and renders all untrusted strings via
   `textContent` (never `innerHTML`).
 

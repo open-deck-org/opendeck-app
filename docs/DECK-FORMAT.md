@@ -36,8 +36,8 @@ automatically, so both `my-talk.deck → index.html` and
 | Field | Required | Default | Notes |
 |-------|----------|---------|-------|
 | `schema` | no | `1` | Format version. |
-| `id` | no | derived from filename + size | `[A-Za-z0-9-_]+`. Used as the deck's origin path/host segment. Stable id ⇒ re-import replaces in place. |
-| `title` | no | `id` | Shown in the library. |
+| `id` | no | — | **Advisory only.** A deck's storage folder and web origin are a **content hash** of its files (25-char base36), *not* this field — so one publisher can't claim another deck's identity or overwrite it. `id` is used only as a fallback display name when `title` is absent. |
+| `title` | no | `id` or filename | Shown in the library. |
 | `entry` | no | `index.html` if present | Must exist in the package. |
 | `orientation` | no | `"any"` | `"landscape"` / `"portrait"` / `"any"`. Best-effort lock on native. |
 | `author` | no | `""` | Shown on the card. |
@@ -46,6 +46,12 @@ automatically, so both `my-talk.deck → index.html` and
 
 `deck.json` is optional: a zip with just an `index.html` imports fine and gets
 sensible defaults (this is exactly `www/samples/welcome/`).
+
+**Re-import / updates:** identity is the content hash, so importing byte-identical
+content again is a no-op (deduped, recency refreshed). A changed package — even a
+new `version` — hashes differently and imports as a **separate** deck rather than
+overwriting the original. There is no in-place "update" of an existing deck's
+files; this is deliberate, so a deck can never partially clobber another's data.
 
 ## Authoring guidance
 

@@ -61,6 +61,19 @@ const webBackend = {
   async importPackage(bytes, filename) {
     const { manifest, files } = await parsePackage(bytes, filename);
     const db = await openDB();
+    // manifest.id is a content hash, so a hit here means byte-identical content
+    // is already stored. Dedup: refresh recency, keep the existing files and any
+    // user flags (favorite). Never overwrite — distinct content gets a distinct id.
+    const existing = await new Promise((res, rej) => {
+      const r = db.transaction('decks').objectStore('decks').get(manifest.id);
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+    if (existing) {
+      existing.addedAt = Date.now();
+      await tx(db, ['decks'], 'readwrite', (t) => t.objectStore('decks').put(existing));
+      return existing;
+    }
     await tx(db, ['decks', 'files'], 'readwrite', (t) => {
       const fstore = t.objectStore('files');
       for (const [path, data] of files) {
@@ -170,6 +183,16 @@ const nativeBackend = {
   async importPackage(bytes, filename) {
     const fs = fsPlugin();
     const { manifest, files } = await parsePackage(bytes, filename);
+    const list = await readIndex(fs);
+    // manifest.id is a content hash: a hit means byte-identical content is
+    // already on disk. Dedup (refresh recency, keep files + user flags). Never
+    // overwrite a folder — distinct content always lands in a distinct id.
+    const existing = list.find((d) => d.id === manifest.id);
+    if (existing) {
+      existing.addedAt = Date.now();
+      await writeIndex(fs, list);
+      return existing;
+    }
     for (const [path, data] of files) {
       await fs.writeFile({
         path: `${ROOT}/${manifest.id}/${path}`,
@@ -178,7 +201,6 @@ const nativeBackend = {
         recursive: true,
       });
     }
-    const list = (await readIndex(fs)).filter((d) => d.id !== manifest.id);
     list.push({ ...manifest, addedAt: Date.now() });
     await writeIndex(fs, list);
     return manifest;
