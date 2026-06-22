@@ -194,6 +194,20 @@ restrictive deck CSP; export-compliance + productivity category keys.
 - **Why:** keeps clear of iOS guidelines **2.5.2** (no downloaded code that
   changes the app) and **4.7** (HTML5 mini-apps) by presenting the app as a
   viewer of documents the user already has.
+- **Canonical MIME = `application/x-deck`** (matches the exporter/skill, which
+  stamps it on the `.deck` blob). Declared on **all** association surfaces: iOS
+  UTI `org.opendeck.deck` (mime tag), Android intent-filters, the web app
+  manifest `file_handlers`, and the import `<input accept>`. Keep them in sync.
+  Because `x-deck` is an unregistered type the OS won't infer from the `.deck`
+  extension, the **extension** (iOS `public.filename-extension`, Android
+  `pathPattern=".*\\.deck"`) and **`application/zip`** fallbacks stay essential —
+  many file managers/downloads label `.deck` as zip or octet-stream. Import
+  itself validates by *content* (unzip + manifest), so a wrong/absent MIME never
+  blocks it; MIME only drives OS-level "open with".
+- **Web:** an installed PWA registers as a `.deck` handler via
+  `manifest.webmanifest` `file_handlers` + the `launchQueue` consumer in
+  `app.js` (Chromium). (Full offline install would also want a shell service
+  worker — deferred; the deck-runtime SW lives on origin B, see D22.)
 
 ### D16 — iOS target wired by a script (`scripts/configure-ios.rb`)
 Uses the `xcodeproj` gem (ships with CocoaPods) to register the Swift files,

@@ -464,6 +464,25 @@ async function syncDecksToRuntime() {
   }
 }
 
+// Installed PWA only: when the OS launches us to open a .deck (File Handling
+// API, Chromium), consume the handle(s) and import. Registered via
+// manifest.webmanifest "file_handlers". The launch is queued until a consumer
+// is set, so a cold launch-by-file is delivered too.
+function wireFileHandler() {
+  if (isNative() || !('launchQueue' in window)) return;
+  window.launchQueue.setConsumer(async (launchParams) => {
+    for (const handle of launchParams.files || []) {
+      try {
+        const file = await handle.getFile();
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        await importFromBytes(bytes, file.name);
+      } catch (err) {
+        console.error('file-handler import failed', err);
+      }
+    }
+  });
+}
+
 /* --------------------------------- boot --------------------------------- */
 
 async function boot() {
@@ -477,6 +496,7 @@ async function boot() {
   initSort();
   await initDeckRuntime();
   wireNativeImport();
+  wireFileHandler();
   await seedSampleIfEmpty();
   await syncDecksToRuntime();
   await refresh();

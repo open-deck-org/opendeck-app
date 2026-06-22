@@ -9,6 +9,9 @@
   <meta name="theme-color" content="#FAFAF8" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#0A0A0A" media="(prefers-color-scheme: dark)" />
   <title>OpenDeck</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -22,7 +25,7 @@
         </button>
         <label class="icon-btn" id="btn-import" for="import-input" aria-label="Import deck" tabindex="0" role="button">
           <span data-icon="plus"></span>
-          <input id="import-input" type="file" accept=".deck,.zip,application/zip" hidden />
+          <input id="import-input" type="file" accept=".deck,application/x-deck,.zip,application/zip" hidden />
         </label>
       </nav>
     </header>

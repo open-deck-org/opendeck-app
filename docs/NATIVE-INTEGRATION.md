@@ -43,9 +43,11 @@ platform. The Android edits live in tracked source files and survive `cap copy`.
   `DeckViewController` (module `App`).
 - `AppDelegate.swift` → `application(_:open:)` routes file URLs to
   `DeckImport.handle(url:)`.
-- `Info.plist` → exported UTI `org.opendeck.deck`, `CFBundleDocumentTypes`
-  (deck = Owner, zip = Alternate), plus App Store framing keys
-  (`LSApplicationCategoryType`, `ITSAppUsesNonExemptEncryption`).
+- `Info.plist` → exported UTI `org.opendeck.deck` (MIME tag
+  **`application/x-deck`** — the canonical `.deck` type emitted by the exporter;
+  keep all surfaces in sync), `CFBundleDocumentTypes` (deck = Owner, zip =
+  Alternate), plus App Store framing keys (`LSApplicationCategoryType`,
+  `ITSAppUsesNonExemptEncryption`).
 - `scripts/configure-ios.rb` → adds the two Swift files to the App target and
   sets `SUPPORTS_MACCATALYST = YES` on all configs.
 
@@ -99,20 +101,22 @@ public review entirely.
 
 **File added** to `android/app/src/main/java/org/opendeck/`:
 - `DeckWebViewClient.java` — extends `BridgeWebViewClient`; intercepts
-  `https://decks.opendeck/<id>/<path>` (and `deck://` for parity) in
+  `https://<id>.decks.opendeck/<path>` (and `deck://` for parity) in
   `shouldInterceptRequest` and serves from `filesDir/decks/<id>/…`. A distinct
-  host keeps decks cross-origin to the shell (`https://localhost`).
+  host **per deck** keeps decks cross-origin to the shell (`https://localhost`)
+  *and* to each other.
 
 **Edits:**
 - `MainActivity.java` → installs `DeckWebViewClient` and handles `VIEW`/`SEND`
   intents: reads the file, base64-encodes it, and injects it into the shell as
   `window.__OPENDECK_PENDING` (poll-then-inject so it survives cold launch).
-- `AndroidManifest.xml` → intent-filters for the `.deck` MIME, the `.deck`
-  extension, and shared `.deck`/`.zip`.
+- `AndroidManifest.xml` → intent-filters for the `.deck` MIME
+  (**`application/x-deck`**), the `.deck` extension (pathPattern fallback for when
+  a provider reports a generic MIME), and shared `.deck`/`.zip`.
 
-> The app emits `https://decks.opendeck/…` URLs on Android (see `player.js`),
-> a real https origin that `shouldInterceptRequest` reliably catches — avoiding
-> the custom-scheme iframe quirks some WebView versions have.
+> The app emits `https://<id>.decks.opendeck/…` URLs on Android (see
+> `player.js`), a real https origin that `shouldInterceptRequest` reliably
+> catches — avoiding the custom-scheme iframe quirks some WebView versions have.
 
 **Build (needs the Android SDK + `ANDROID_HOME`):**
 ```bash

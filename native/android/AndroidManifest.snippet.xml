@@ -13,8 +13,8 @@
   <action android:name="android.intent.action.VIEW" />
   <category android:name="android.intent.category.DEFAULT" />
   <category android:name="android.intent.category.BROWSABLE" />
-  <data android:scheme="content" android:mimeType="application/x-opendeck" />
-  <data android:scheme="file" android:mimeType="application/x-opendeck" />
+  <data android:scheme="content" android:mimeType="application/x-deck" />
+  <data android:scheme="file" android:mimeType="application/x-deck" />
 </intent-filter>
 
 <!-- Match by .deck extension when MIME is generic/unknown -->
@@ -33,7 +33,7 @@
 <intent-filter android:label="Import to OpenDeck">
   <action android:name="android.intent.action.SEND" />
   <category android:name="android.intent.category.DEFAULT" />
-  <data android:mimeType="application/x-opendeck" />
+  <data android:mimeType="application/x-deck" />
   <data android:mimeType="application/zip" />
 </intent-filter>
 

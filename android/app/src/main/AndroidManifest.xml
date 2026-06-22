@@ -27,8 +27,8 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="content" android:mimeType="application/x-opendeck" />
-                <data android:scheme="file" android:mimeType="application/x-opendeck" />
+                <data android:scheme="content" android:mimeType="application/x-deck" />
+                <data android:scheme="file" android:mimeType="application/x-deck" />
             </intent-filter>
 
             <!-- Match a .deck by extension when the MIME is generic/unknown -->
@@ -47,7 +47,7 @@
             <intent-filter android:label="@string/title_activity_main">
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="application/x-opendeck" />
+                <data android:mimeType="application/x-deck" />
                 <data android:mimeType="application/zip" />
             </intent-filter>
 
