@@ -2,9 +2,14 @@
 //
 // Serves /__deck__/<id>/<path...> from the SAME IndexedDB that store.js writes
 // to, giving decks a real HTTP origin (relative URLs, ES modules, fetch all
-// work). The player loads decks in an opaque-origin sandboxed iframe, so the
-// `Access-Control-Allow-Origin: *` header below lets the deck fetch its own
-// relative resources across that opaque-origin boundary.
+// work). The player frame keeps `allow-same-origin` here because a service
+// worker cannot control an opaque-origin frame — so on web a deck shares the
+// shell origin (weaker isolation than the per-deck origins used on device).
+//
+// We can't make a deck cross-origin on web without abandoning the SW, but we
+// CAN stop it exfiltrating: the CSP below allows no remote hosts, so a deck
+// cannot phone home (it still can't be prevented from reading same-origin data,
+// which CSP doesn't gate — see docs/ARCHITECTURE.md "web" boundary).
 //
 // On native, this file is unused — the deck:// scheme handler does the same job.
 
@@ -51,10 +56,19 @@ async function serveDeckFile(pathname) {
       status: 200,
       headers: {
         'Content-Type': rec.mime || 'application/octet-stream',
-        'Access-Control-Allow-Origin': '*',
+        // No Access-Control-Allow-Origin: the deck frame is same-origin to the
+        // shell here, so it needs no CORS to load its own resources, and '*'
+        // would only widen reach for no benefit.
         'Cache-Control': 'no-store',
-        // Defense in depth: a deck cannot frame-bust or navigate the top shell.
         'X-Content-Type-Options': 'nosniff',
+        // Block network exfiltration: no remote host is allowed anywhere. 'self'
+        // is the shell origin (where the SW serves), so a deck can still read
+        // same-origin data — CSP can't stop that — but it cannot send it out.
+        'Content-Security-Policy':
+          "default-src 'self' blob: data:; img-src 'self' blob: data:; " +
+          "media-src 'self' blob: data:; font-src 'self' data:; " +
+          "style-src 'self' 'unsafe-inline'; " +
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' blob: data:",
       },
     });
   } catch (err) {

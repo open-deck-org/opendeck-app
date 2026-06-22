@@ -44,7 +44,7 @@ opaque origin** (i.e. one without `allow-same-origin`). So:
 | | Deck origin | vs. shell | vs. other decks | Isolation |
 |---|---|---|---|---|
 | **Native** (iOS/macOS/Android) | `deck://<id>` / `<id>.decks.opendeck` (distinct host per deck) | different | **different** | **full** — cross-origin to the shell (no `Capacitor.Plugins`, shell DOM, or `window.parent`) *and* cross-origin to every other deck (no shared storage, can't fetch another deck's files) |
-| **Web/PWA** | same origin, `/__deck__/<id>` path | same | same | partial — the SW must control the frame, so all decks share the shell origin; acceptable because a browser has **no native bridge** to protect. Not a device build. |
+| **Web/PWA** | same origin, `/__deck__/<id>` path | same | same | partial — a SW can't control an opaque-origin frame, so all decks share the shell origin and a deck *can read* same-origin data (the library store, other decks). The SW sends a CSP with **no remote hosts**, so a deck **cannot exfiltrate** what it reads; popups stay sandboxed. A browser also has **no native bridge** to protect. Not the device build. |
 
 Per-deck isolation on native rests on two things: (1) the deck id is a **distinct
 host** (`deck://<id>` or the `<id>` subdomain), so two decks are different
@@ -132,6 +132,12 @@ used for identity — only as a display-name fallback. Consequences:
   `connect-src` only if you intentionally allow online decks.
 - Native handlers send **no `Access-Control-Allow-Origin`**, so a sibling deck
   origin cannot read another deck's files via `fetch()`.
+- **Web/PWA** can't make decks cross-origin (SW constraint), so the SW instead
+  sends the same no-remote CSP — a web deck can read same-origin data but
+  **cannot exfiltrate** it. Strong isolation remains a device property.
+- The deck iframe sandbox omits `allow-top-navigation` (can't replace the shell)
+  and `allow-popups-to-escape-sandbox` (any popup stays sandboxed — untrusted
+  code can never open a fully-privileged window).
 - The shell validates the manifest and renders all untrusted strings via
   `textContent` (never `innerHTML`).
 

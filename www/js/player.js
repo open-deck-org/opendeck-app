@@ -39,8 +39,14 @@ function sandboxAttr() {
   // allow-same-origin is required on web for the service worker to control the
   // frame; on native it resolves to the deck's own origin (deck:// on iOS/macOS,
   // the https deck host on Android), keeping it cross-origin to the shell.
-  // Notably absent: allow-top-navigation — the deck cannot replace the shell.
-  return ['allow-scripts', 'allow-same-origin', 'allow-popups', 'allow-popups-to-escape-sandbox', 'allow-forms'].join(' ');
+  // Notably absent:
+  //   - allow-top-navigation: the deck cannot replace the shell.
+  //   - allow-popups-to-escape-sandbox: any popup a deck opens stays sandboxed,
+  //     so untrusted code can never spawn a fully-privileged window.
+  // allow-popups is kept so decks can still open links (those popups remain
+  // sandboxed). A popup URL is a residual, user-visible egress channel; the
+  // network exfiltration paths are closed by the deck CSP (native + web SW).
+  return ['allow-scripts', 'allow-same-origin', 'allow-popups', 'allow-forms'].join(' ');
 }
 
 const el = {
