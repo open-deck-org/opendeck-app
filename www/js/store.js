@@ -1,8 +1,9 @@
 // DeckStore: persists imported decks and exposes the library list.
 //
-//  - Web / PWA: IndexedDB. Unzipped files live in the `files` object store
-//    keyed `${id}/${path}`; the service worker (sw.js) reads the SAME database
-//    to serve `/__deck__/<id>/...`.
+//  - Web / PWA: IndexedDB on the SHELL origin (A) is canonical. Unzipped files
+//    live in the `files` object store keyed `${id}/${path}`; deckbridge.js then
+//    pushes them to the dedicated deck-runtime origin (B), whose own service
+//    worker serves `/__deck__/<id>/...`. `readFiles` repopulates B on demand.
 //  - Native (iOS/Android/Catalyst): the Capacitor Filesystem plugin writes the
 //    unzipped tree under Directory.Library/decks/<id>/...; the native deck://
 //    scheme handler (or Android asset loader) reads it straight off disk.
@@ -105,6 +106,28 @@ const webBackend = {
         const c = e.target.result;
         if (c) { c.delete(); c.continue(); }
       };
+    });
+  },
+
+  // Read a deck's files back as [path, Uint8Array, mime] — used to (re)populate
+  // the dedicated deck origin (B) on web. See deckbridge.js.
+  async readFiles(id) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const out = [];
+      const range = IDBKeyRange.bound(`${id}/`, `${id}/￿`);
+      const cur = db.transaction('files').objectStore('files').openCursor(range);
+      cur.onsuccess = () => {
+        const c = cur.result;
+        if (c) {
+          const path = String(c.key).slice(id.length + 1);
+          out.push([path, c.value.data, c.value.mime]);
+          c.continue();
+        } else {
+          resolve(out);
+        }
+      };
+      cur.onerror = () => reject(cur.error);
     });
   },
 
@@ -259,4 +282,8 @@ export const DeckStore = {
   remove: (id) => backend.remove(id),
   touch: (id) => backend.touch(id),
   setFavorite: (id, value) => backend.setFavorite(id, value),
+  // Web-only: read a deck's bytes back to repopulate the deck-runtime origin (B).
+  readFiles: (id) => backend.readFiles
+    ? backend.readFiles(id)
+    : Promise.reject(new Error('readFiles is web-only')),
 };

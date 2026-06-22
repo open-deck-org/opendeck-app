@@ -3,7 +3,8 @@
 
 import { isNative, platformName, plugin } from './platform.js';
 import { DeckStore } from './store.js';
-import { openPlayer, closePlayer, isPlayerOpen, deckUrl } from './player.js';
+import { openPlayer, closePlayer, isPlayerOpen, deckUrl, deckRuntimeOrigin } from './player.js';
+import { DeckBridge } from './deckbridge.js';
 import { seedSampleIfEmpty } from './seed.js';
 import { hydrateIcons, iconSvg } from './icons.js';
 
@@ -130,7 +131,11 @@ function deckCard(manifest) {
 
   li.append(open, menuBtn, label);
 
-  const present = () => { DeckStore.touch(id); openPlayer(manifest); };
+  const present = async () => {
+    DeckStore.touch(id);
+    if (!isNative()) { try { await DeckBridge.ensure(id); } catch (e) { console.warn('deck runtime ensure', e); } }
+    openPlayer(manifest);
+  };
   open.addEventListener('click', present);
   menuBtn.addEventListener('click', (e) => { e.stopPropagation(); openActions(manifest); });
   li.addEventListener('contextmenu', (e) => { e.preventDefault(); openActions(manifest); }); // desktop right-click
@@ -334,6 +339,7 @@ $('confirm-delete').addEventListener('click', async () => {
   const cardEl = grid.querySelector(`.card[data-id="${CSS.escape(id)}"]`);
   if (cardEl) cardEl.classList.add('is-removing');
   await DeckStore.remove(id);
+  if (!isNative()) { try { await DeckBridge.remove(id); } catch (e) { console.warn('deck runtime remove', e); } }
   toast('Deck removed');
   await refresh();
 });
@@ -344,6 +350,7 @@ async function importFromBytes(bytes, filename) {
   try {
     toast('Importing…');
     const manifest = await DeckStore.importPackage(bytes, filename);
+    if (!isNative()) { try { await DeckBridge.ensure(manifest.id); } catch (e) { console.warn('deck runtime ensure', e); } }
     toast(`Added “${manifest.title}”`);
     await refresh();
     return manifest;
@@ -434,24 +441,26 @@ window.addEventListener('keydown', (e) => {
   if (settingsEl.classList.contains('is-open')) closeOverlay(settingsEl);
 });
 
-/* --------------------------- service worker ----------------------------- */
-// On web/PWA, the SW serves decks from /__deck__/<id>/... giving them a real
-// HTTP origin. Not used on native (the deck:// scheme handler does this job).
+/* --------------------------- deck runtime (web) ------------------------- */
+// On web/PWA, decks are served from a SEPARATE origin (B) — its own service
+// worker — so a deck is cross-origin to the shell. We init the bridge to B and
+// then push the existing library into it. Not used on native (the deck:// /
+// subdomain handlers do this job). See deckbridge.js and docs/DECISIONS.md D22.
 
-async function registerDeckServer() {
-  if (isNative() || !('serviceWorker' in navigator)) return;
+async function initDeckRuntime() {
+  if (isNative()) return;
   try {
-    await navigator.serviceWorker.register('sw.js');
-    await navigator.serviceWorker.ready;
-    if (!navigator.serviceWorker.controller) {
-      await new Promise((resolve) => {
-        navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true });
-        setTimeout(resolve, 2000); // safety net
-      });
-    }
+    await DeckBridge.init(deckRuntimeOrigin());
   } catch (err) {
-    console.warn('Deck service worker failed to register:', err);
-    toast('Deck preview needs a service worker (serve over http, not file://).');
+    console.warn('Deck runtime init failed:', err);
+    toast('Deck preview needs the deck-runtime origin (run `npm run dev`).');
+  }
+}
+
+async function syncDecksToRuntime() {
+  if (isNative()) return;
+  for (const d of await DeckStore.list()) {
+    try { await DeckBridge.ensure(d.id); } catch (e) { console.warn('deck runtime sync', d.id, e); }
   }
 }
 
@@ -466,9 +475,10 @@ async function boot() {
   initTheme();
   initCardSize();
   initSort();
-  await registerDeckServer();
+  await initDeckRuntime();
   wireNativeImport();
   await seedSampleIfEmpty();
+  await syncDecksToRuntime();
   await refresh();
 }
 

@@ -55,25 +55,72 @@ iOS/macOS `deck://`, Android `https://decks.opendeck/`, Web `/__deck__/`.
   a service worker (web).
 
 ### D6 — Android uses an **https host**, not a `deck://` scheme
+*(Host scheme still https; the single shared host was later split per-deck — see D21.)*
 - **Why:** Android WebView is inconsistent about routing *custom-scheme* iframe
-  navigations through `shouldInterceptRequest`; a real https host
-  (`decks.opendeck`, never resolved — always intercepted) is reliable and is a
-  distinct origin from the shell (`https://localhost`). iOS has no such issue, so
-  it keeps the cleaner `deck://`.
+  navigations through `shouldInterceptRequest`; a real https host (never resolved —
+  always intercepted) is reliable and is a distinct origin from the shell
+  (`https://localhost`). iOS has no such issue, so it keeps the cleaner `deck://`.
 
 ### D7 — `allow-same-origin` is always set; isolation strength differs by platform
+*(Web boundary later hardened and then moved to a dedicated origin — see D22.)*
 - **Why:** a service worker **cannot control an opaque-origin iframe**, so on web
-  the deck frame must be same-origin for the SW to serve it. On native the same
-  flag resolves to the deck's *own* (cross-origin) origin → real isolation.
-- **Consequence:** the **web** preview is weaker (deck shares the shell origin) —
-  acceptable because a browser build has no native bridge to protect. Strong
-  isolation is a *native* property, which is where untrusted decks actually run
-  with bridge access. (This is the source of the benign "iframe can escape its
-  sandboxing" console warning.)
+  the deck frame must be same-origin *to whatever origin its SW lives on* for the
+  SW to serve it. On native the same flag resolves to the deck's *own*
+  (cross-origin) origin → real isolation.
+- **Consequence:** historically the web preview shared the **shell** origin
+  (weaker). D22 moves deck serving to a separate origin so the frame is
+  same-origin to *that* origin and cross-origin to the shell.
 
 ### D8 — Native handlers enforce a path-traversal guard + restrictive CSP
+*(Guard + CSP later tightened — see D21.)*
 - **Why:** never serve outside `decks/<id>/`; `connect-src` is locked so a deck
   can load its own bundled assets but can't exfiltrate to the network.
+
+### D20 — Deck identity is a **content hash**, not the author's `manifest.id`
+A deck's storage folder and origin id are a 128-bit SHA-256 of its normalized
+file tree, base36-encoded to a 25-char string (`unzip.js → contentId`).
+- **Why:** `manifest.id` is untrusted. If it decided the folder, one publisher
+  could ship a fake "v2.0" with another deck's id and **overwrite / partially
+  clobber** it. Content addressing makes identity a function of the bytes:
+  different content → different id → a separate, isolated folder. Import is
+  create-if-absent; byte-identical re-import **dedups** (refresh recency only).
+- **Why base36 (not hex or base62):** the id doubles as a DNS subdomain label
+  (Android, D21) and a folder name on case-insensitive APFS (iOS); base62's mixed
+  case would collapse and collide, hex is longer. base36 is short *and*
+  case-insensitive-safe. `manifest.id` survives only as a display-name fallback.
+
+### D21 — **One origin per deck** on native (deck↔deck isolation) + handler hardening
+Android moved from one shared `https://decks.opendeck/<id>/` host to a per-deck
+subdomain `https://<id>.decks.opendeck/`; iOS already had per-deck `deck://<id>`.
+- **Why:** a single shared host made *all* decks the same origin, so a deck could
+  read every other deck's `localStorage`/IndexedDB and `fetch()` their files. A
+  distinct host per deck (the content-hash id, D20) makes each deck its own
+  origin — isolated from the shell *and* from sibling decks.
+- **Hardening shipped with it:** CSP dropped the scheme-wide `deck:` token (now
+  `'self'`-only, so a deck can't even address a sibling); handlers send **no
+  `Access-Control-Allow-Origin`** (sibling origins can't read via `fetch`); the
+  path-traversal guard uses a trailing separator so `…/a` can't prefix-match
+  `…/ab`; the Android handler gained the CSP it was previously missing.
+
+### D22 — Web/PWA: a **dedicated deck origin** (B); per-deck subdomains (C) deferred
+On web a SW can't control an opaque-origin frame, so decks can't be made
+cross-origin *for free* from one static origin. We host a second origin:
+- **A = shell** (`localhost:5173` dev): library UI, import, canonical store.
+- **B = deck runtime** (`localhost:5174` dev / a `decks.` subdomain in prod): a
+  tiny static site — a bootstrap/bridge page + a SW that serves `/__deck__/<id>/`
+  from **B's** IndexedDB. The player loads `https://B/__deck__/…` so the deck
+  frame is **cross-origin to the shell** (can't reach the shell DOM, the library
+  store, or `window.parent`). Bytes cross A→B once via `postMessage` (A stays
+  canonical; B is a serving cache repopulated on demand, robust to eviction).
+- **Step 0 (already shipped, D-prior):** before B, the SW got a no-remote CSP and
+  the sandbox lost `allow-popups-to-escape-sandbox`, so even same-origin web decks
+  couldn't *exfiltrate* and couldn't spawn a privileged popup.
+- **C (per-deck subdomain `<id>.decks…`) deferred:** would isolate decks from each
+  other on web too, but needs wildcard DNS + wildcard TLS + a SW per deck, and a
+  rough dev story (`*.localhost` unsupported on Safari). Low marginal value once B
+  protects the shell/library — revisit only for a real deck-holds-secrets threat.
+- **Native is unaffected** — it already has per-deck origins (D21); B/C only close
+  the browser gap.
 
 ---
 

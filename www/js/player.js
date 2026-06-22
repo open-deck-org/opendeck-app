@@ -21,24 +21,39 @@ import { isNative, platformName } from './platform.js';
 // AND each deck gets its OWN origin so decks are isolated from each other:
 //   ios / macOS (Catalyst): deck://<id>/                 (WKURLSchemeHandler)
 //   android:                https://<id>.decks.opendeck/  (WebView intercept)
-//   web / PWA:              same-origin path              (service worker)
+//   web / PWA:              https://<deck-runtime>/__deck__/<id>/ (its own SW)
 // On native the per-deck origin (distinct host = distinct origin) means deck A
 // cannot read deck B's storage or files. `manifest.id` is the content hash, a
 // 25-char base36 string — a valid DNS label, so it works as a subdomain.
+//
+// On web the deck runs on a SEPARATE origin (B) from the shell (A) so it's
+// cross-origin to the shell — see docs/DECISIONS.md D22 and deckbridge.js.
 export const ANDROID_DECK_DOMAIN = 'decks.opendeck';
+
+// The deck-runtime origin on web (B). Configure for prod with
+// <meta name="opendeck-deck-origin" content="https://decks.example.com">.
+// Dev default: a second port (cross-origin to the shell on :5173).
+export function deckRuntimeOrigin() {
+  const meta = document.querySelector('meta[name="opendeck-deck-origin"]');
+  if (meta && meta.content) return new URL(meta.content).origin;
+  const { protocol, hostname } = location;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') return `${protocol}//${hostname}:5174`;
+  return `${protocol}//decks.${hostname}`;
+}
 
 export function deckUrl(manifest, sub) {
   const path = sub || manifest.entry || 'index.html';
   const p = platformName();
   if (p === 'android') return `https://${manifest.id}.${ANDROID_DECK_DOMAIN}/${path}`;
   if (isNative()) return `deck://${manifest.id}/${path}`;   // ios + macOS
-  return `${location.origin}/__deck__/${manifest.id}/${path}`;
+  return `${deckRuntimeOrigin()}/__deck__/${manifest.id}/${path}`;
 }
 
 function sandboxAttr() {
-  // allow-same-origin is required on web for the service worker to control the
-  // frame; on native it resolves to the deck's own origin (deck:// on iOS/macOS,
-  // the https deck host on Android), keeping it cross-origin to the shell.
+  // allow-same-origin is required so the deck's service worker can control the
+  // frame; it resolves to the deck's OWN origin — deck:// on iOS/macOS, the https
+  // deck host on Android, the deck-runtime origin (B) on web — which is always
+  // cross-origin to the shell.
   // Notably absent:
   //   - allow-top-navigation: the deck cannot replace the shell.
   //   - allow-popups-to-escape-sandbox: any popup a deck opens stays sandboxed,

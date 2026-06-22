@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OpenDeck deck runtime</title>
+<meta name="robots" content="noindex">
+</head>
+<body>
+<!--
+  Control bridge for the dedicated deck origin (B). The shell (A) embeds this
+  page in a hidden iframe and talks to it via postMessage to:
+    - register/activate the deck service worker (sw.js, this origin),
+    - write deck file bytes into THIS origin's IndexedDB,
+    - check presence / delete.
+  The shell then loads each deck from https://<this-origin>/__deck__/<id>/...,
+  which the SW serves — cross-origin to the shell. See docs/DECISIONS.md D22.
+-->
+<script>
+(function () {
+  'use strict';
+  var DB_NAME = 'opendeck-deck-runtime';
+  var STORE = 'files';
+
+  // The shell passes its own origin as ?shell=… ; we accept messages only from it.
+  var params = new URLSearchParams(location.search);
+  var SHELL_ORIGIN = '';
+  try { SHELL_ORIGIN = new URL(params.get('shell') || '').origin; } catch (e) { SHELL_ORIGIN = ''; }
+
+  function openDB() {
+    return new Promise(function (resolve, reject) {
+      var req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = function () {
+        var db = req.result;
+        if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE);
+      };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+
+  function putFiles(id, files) {
+    return openDB().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var t = db.transaction(STORE, 'readwrite');
+        var store = t.objectStore(STORE);
+        files.forEach(function (f) {
+          // f = [path, data(Uint8Array), mime]
+          store.put({ data: f[1], mime: f[2] }, id + '/' + f[0]);
+        });
+        t.oncomplete = function () { resolve(true); };
+        t.onerror = function () { reject(t.error); };
+        t.onabort = function () { reject(t.error); };
+      });
+    });
+  }
+
+  function hasDeck(id) {
+    return openDB().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        // Any key in [id/ , id/￿] means the deck is present.
+        var range = IDBKeyRange.bound(id + '/', id + '/￿');
+        var r = db.transaction(STORE).objectStore(STORE).openKeyCursor(range);
+        r.onsuccess = function () { resolve(!!r.result); };
+        r.onerror = function () { reject(r.error); };
+      });
+    });
+  }
+
+  function delDeck(id) {
+    return openDB().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var t = db.transaction(STORE, 'readwrite');
+        var range = IDBKeyRange.bound(id + '/', id + '/￿');
+        t.objectStore(STORE).openCursor(range).onsuccess = function (e) {
+          var c = e.target.result;
+          if (c) { c.delete(); c.continue(); }
+        };
+        t.oncomplete = function () { resolve(true); };
+        t.onerror = function () { reject(t.error); };
+      });
+    });
+  }
+
+  function reply(msg) {
+    if (SHELL_ORIGIN) parent.postMessage(msg, SHELL_ORIGIN);
+  }
+
+  window.addEventListener('message', function (event) {
+    if (!SHELL_ORIGIN || event.origin !== SHELL_ORIGIN) return; // pin to the shell
+    var m = event.data || {};
+    var reqId = m.reqId;
+    var done = function (extra) { reply(Object.assign({ type: 'reply', reqId: reqId }, extra)); };
+    var fail = function (err) { reply({ type: 'reply', reqId: reqId, error: String(err && err.message || err) }); };
+
+    if (m.type === 'put') {
+      putFiles(m.id, m.files).then(function () { done({ ok: true }); }, fail);
+    } else if (m.type === 'has') {
+      hasDeck(m.id).then(function (present) { done({ present: present }); }, fail);
+    } else if (m.type === 'del') {
+      delDeck(m.id).then(function () { done({ ok: true }); }, fail);
+    }
+  });
+
+  // Register + activate the deck SW, then tell the shell we're ready.
+  function announceReady() { reply({ type: 'ready' }); }
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(function () {
+      return navigator.serviceWorker.ready;
+    }).then(function () {
+      if (navigator.serviceWorker.controller) return;
+      return new Promise(function (resolve) {
+        navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true });
+        setTimeout(resolve, 2000);
+      });
+    }).then(announceReady, function (err) {
+      reply({ type: 'error', error: 'SW registration failed: ' + (err && err.message || err) });
+    });
+  } else {
+    reply({ type: 'error', error: 'Service workers unavailable' });
+  }
+})();
+</script>
+</body>
+</html>
