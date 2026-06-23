@@ -1,0 +1,12 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OpenDeck icon foreground (light)">
+  <!-- Icon Composer FOREGROUND layer — light. The deck mark only, on a
+       TRANSPARENT canvas so it composites over the background layer.
+       Dark card + paper-white lens, matching opendeck-icon.svg #fg. -->
+  <!-- back card (a second deck, peeking) -->
+  <rect x="312" y="250" width="400" height="470" rx="56"
+        fill="none" stroke="#1A1A1A" stroke-opacity="0.18" stroke-width="20"/>
+  <!-- front card: the deck -->
+  <rect x="272" y="300" width="480" height="470" rx="64" fill="#1A1A1A"/>
+  <!-- lens / "O": the deck, opened -->
+  <circle cx="512" cy="535" r="132" fill="none" stroke="#FAFAF8" stroke-width="34"/>
+</svg>

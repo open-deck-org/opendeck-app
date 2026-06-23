@@ -1,0 +1,12 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OpenDeck icon foreground (dark)">
+  <!-- Icon Composer FOREGROUND layer — dark. The deck mark only, on a
+       TRANSPARENT canvas. Inverted per the master's dark spec:
+       light card (#F4F4EF) + near-black lens, so it reads on the dark bg. -->
+  <!-- back card (a second deck, peeking) -->
+  <rect x="312" y="250" width="400" height="470" rx="56"
+        fill="none" stroke="#F4F4EF" stroke-opacity="0.22" stroke-width="20"/>
+  <!-- front card: the deck -->
+  <rect x="272" y="300" width="480" height="470" rx="64" fill="#F4F4EF"/>
+  <!-- lens / "O": the deck, opened -->
+  <circle cx="512" cy="535" r="132" fill="none" stroke="#0A0A0A" stroke-width="34"/>
+</svg>
