@@ -48,17 +48,27 @@ Privacy row states this to the user verbatim.
 - [x] Visible focus rings, `aria-label`s, `role="dialog"`/`aria-modal`, `aria-live` status.
 - [x] Touch targets ≥ 44pt (iOS) / 48dp (Android).
 
-## App icon (layered, Liquid Glass) — action required at build
+## App icon (light / dark / tinted) — done
 
-The master is `docs/assets/opendeck-icon.svg` with `#bg` (paper) and `#fg`
-(deck mark) groups. To produce the icon set:
+The `AppIcon` set ships all three iOS-18 appearances as single-size 1024²
+opaque PNGs, declared in
+`ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json`:
 
-1. Open **Icon Composer** (Xcode 26+ / Apple Design Resources).
-2. Import the two layers (background = `#bg`, foreground = `#fg`).
-3. Generate **light, dark, and tinted** variants (dark: bg `#0A0A0A`, card
-   `#F4F4EF`, lens stroke `#0A0A0A`).
-4. Export the `.icon`/asset catalog into the iOS project; add the adaptive icon
-   to `android/app/src/main/res` (foreground/background drawables).
+- `AppIcon-light-1024.png` — default (paper).
+- `AppIcon-dark-1024.png` — dark luminosity.
+- `AppIcon-tinted-1024.png` — tinted luminosity; grayscale-on-black master
+  `docs/assets/opendeck-icon-tinted.svg` (system maps luminance to the user's
+  tint). Regenerate with
+  `rsvg-convert -w 1024 -h 1024 docs/assets/opendeck-icon-tinted.svg | magick - -background black -alpha remove ...`.
+
+Validated with `actool` (compiles to `Assets.car`, no warnings).
+
+Optional / still open:
+- The **Icon Composer `.icon` layered (Liquid Glass specular) bundle** needs the
+  GUI (Icon Composer.app). The appearance-aware appiconset above is fully App
+  Store valid; the layered `.icon` is a polish upgrade, not a requirement.
+- **Android** adaptive icon (`android/app/src/main/res` foreground/background
+  drawables) — only if shipping Play.
 
 ## Cross-platform behavior
 
@@ -67,10 +77,34 @@ The master is `docs/assets/opendeck-icon.svg` with `#bg` (paper) and `#fg`
 - **macOS (Catalyst):** hover states, right-click → delete sheet, resizable
   window (the `auto-fill` grid reflows).
 
+## Privacy manifest — done
+
+`ios/App/App/PrivacyInfo.xcprivacy` ships in the app bundle (wired into the
+`App` target's Resources build phase). It declares `NSPrivacyTracking=false`, no
+tracking domains, no collected data, and the required-reason APIs that Capacitor
+core + the Filesystem plugin touch (UserDefaults `CA92.1`, file timestamps
+`C617.1`, disk space `E174.1`). Required by App Store since May 2024.
+
+## Submission scope — iOS + iPadOS + macOS (one Apple effort)
+
+Single Xcode target: `TARGETED_DEVICE_FAMILY = "1,2"` (iPhone + iPad) and
+`SUPPORTS_MACCATALYST = YES`. The Mac build reuses `org.opendeck`
+(`DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = NO`). In App Store Connect this
+is still **two platform listings** (iOS and macOS) under one app record, each
+needing its own screenshots.
+
 ## Pre-submission checklist
 
-- [ ] Run on device in both light and dark, plus Reduce Transparency / Increase Contrast / Larger Text.
-- [ ] Verify Back exits cleanly on Android; verify file-open/share import on all platforms.
+Code / project (done):
+- [x] Privacy manifest added and bundled.
+- [x] `UIRequiredDeviceCapabilities` corrected `armv7` → `arm64`.
+- [x] App icon light / dark / tinted appearances (validated with `actool`).
+- [x] `IPHONEOS_DEPLOYMENT_TARGET` raised 13.0 → 15.0 (app + Podfile; pods reinstalled).
+
+Still required before upload:
+- [ ] Run on device (iPhone, iPad, Mac) in light + dark, plus Reduce Transparency / Increase Contrast / Larger Text.
+- [ ] Verify file-open/share `.deck` import on all platforms (and Android Back if shipping Play).
 - [ ] Confirm zero outbound network requests (Instruments / proxy).
-- [ ] Generate and install the layered app icon.
+- [ ] Archive (Generic iOS Device + Mac) with a Distribution profile; pass Organizer validation.
+- [ ] App Store Connect: privacy-policy URL, support URL, screenshots (6.9"/6.7" iPhone, 13" iPad, Mac), age rating, "Data Not Collected" label.
 - [ ] Fill App Review notes with the 2.5.2 framing above.

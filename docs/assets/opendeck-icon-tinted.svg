@@ -1,0 +1,24 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OpenDeck app icon (tinted)">
+  <!-- ============================================================
+       OpenDeck — tinted (monochrome) app-icon master.
+       iOS 18+ tinted appearance: the system ignores hue and maps
+       LUMINANCE to the user's chosen tint over black. So this master
+       is pure grayscale on a black, full-bleed square:
+         bright mark  → takes the tint
+         black areas  → stay black
+       Mirrors the same deck mark as opendeck-icon.svg.
+       ============================================================ -->
+  <g id="bg">
+    <rect width="1024" height="1024" fill="#000000"/>
+  </g>
+
+  <g id="fg">
+    <!-- back card (a second deck, peeking) -->
+    <rect x="312" y="250" width="400" height="470" rx="56"
+          fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="20"/>
+    <!-- front card: the deck -->
+    <rect x="272" y="300" width="480" height="470" rx="64" fill="#FFFFFF"/>
+    <!-- lens / "O": the deck, opened — reads as a cutout against the card -->
+    <circle cx="512" cy="535" r="132" fill="none" stroke="#000000" stroke-width="34"/>
+  </g>
+</svg>
