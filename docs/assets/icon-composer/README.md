@@ -9,8 +9,8 @@ Icon Composer accepts either; prefer the SVGs.
 |---|---|---|---|
 | `bg-light.*` | Background | Light | Full-bleed paper gradient. Opaque. |
 | `bg-dark.*`  | Background | Dark  | Full-bleed `#0A0A0A`. Opaque. |
-| `fg-light.*` | Foreground | Light | Deck mark, **transparent** canvas. Dark card + white lens. |
-| `fg-dark.*`  | Foreground | Dark  | Deck mark, **transparent** canvas. Light card + dark lens. |
+| `fg-light.*` | Foreground | Light | Layered-"D" mark, **transparent** canvas. Front + second cards semi-transparent (glassy depth). |
+| `fg-dark.*`  | Foreground | Dark  | Layered-"D" mark, **transparent** canvas. Bright front card on dark; front + second cards semi-transparent. |
 
 Tinted appearance: let Icon Composer **auto-generate** it from the layers (it
 monochromes them); no separate art needed.

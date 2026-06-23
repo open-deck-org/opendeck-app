@@ -1,12 +1,14 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OpenDeck icon foreground (light)">
-  <!-- Icon Composer FOREGROUND layer — light. The deck mark only, on a
-       TRANSPARENT canvas so it composites over the background layer.
-       Dark card + paper-white lens, matching opendeck-icon.svg #fg. -->
-  <!-- back card (a second deck, peeking) -->
-  <rect x="312" y="250" width="400" height="470" rx="56"
-        fill="none" stroke="#1A1A1A" stroke-opacity="0.18" stroke-width="20"/>
-  <!-- front card: the deck -->
-  <rect x="272" y="300" width="480" height="470" rx="64" fill="#1A1A1A"/>
-  <!-- lens / "O": the deck, opened -->
-  <circle cx="512" cy="535" r="132" fill="none" stroke="#FAFAF8" stroke-width="34"/>
+  <!-- Icon Composer FOREGROUND layer — light. The layered-"D" deck mark only,
+       on a TRANSPARENT canvas so it composites over the background layer.
+       Variant 2: front + second cards semi-transparent for glassy depth.
+       Mark scaled to 90% (the reduced-10% sizing). -->
+  <g transform="translate(512 512) scale(0.9) translate(-512 -512)">
+    <path d="M282 162 H654 A290 290 0 0 1 944 452 V492 A290 290 0 0 1 654 782 H282 A48 48 0 0 1 234 734 V210 A48 48 0 0 1 282 162 Z"
+          fill="#8C897C" stroke="#FFFFFF" stroke-opacity="0.26" stroke-width="4"/>
+    <path d="M240 206 H612 A290 290 0 0 1 902 496 V536 A290 290 0 0 1 612 826 H240 A48 48 0 0 1 192 778 V254 A48 48 0 0 1 240 206 Z"
+          fill="#BBB8AC" fill-opacity="0.82" stroke="#FFFFFF" stroke-opacity="0.42" stroke-width="4"/>
+    <path d="M198 250 H570 A290 290 0 0 1 860 540 V580 A290 290 0 0 1 570 870 H198 A48 48 0 0 1 150 822 V298 A48 48 0 0 1 198 250 Z"
+          fill="#E7E5DD" fill-opacity="0.70" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="4"/>
+  </g>
 </svg>

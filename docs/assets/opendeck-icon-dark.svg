@@ -1,8 +1,13 @@
-<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OpenDeck icon foreground (dark)">
-  <!-- Icon Composer FOREGROUND layer — dark. The layered-"D" deck mark only,
-       on a TRANSPARENT canvas. Front card stays bright cream over the dark bg;
-       front + second cards semi-transparent for the glassy depth. -->
-  <g transform="translate(512 512) scale(0.9) translate(-512 -512)">
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OpenDeck app icon (dark)">
+  <!-- OpenDeck app-icon master — dark appearance. Near-black bg; the front
+       card stays bright cream, back cards are greys. Front + second cards
+       semi-transparent for glassy depth (front a touch more opaque than the
+       light master so it doesn't dim over black). #bg / #fg map to Icon
+       Composer layers. -->
+  <g id="bg">
+    <rect width="1024" height="1024" fill="#0A0A0A"/>
+  </g>
+  <g id="fg" transform="translate(512 512) scale(0.9) translate(-512 -512)">
     <path d="M282 162 H654 A290 290 0 0 1 944 452 V492 A290 290 0 0 1 654 782 H282 A48 48 0 0 1 234 734 V210 A48 48 0 0 1 282 162 Z"
           fill="#56534A" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="4"/>
     <path d="M240 206 H612 A290 290 0 0 1 902 496 V536 A290 290 0 0 1 612 826 H240 A48 48 0 0 1 192 778 V254 A48 48 0 0 1 240 206 Z"
