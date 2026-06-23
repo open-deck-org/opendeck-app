@@ -8,7 +8,26 @@ import { DeckBridge } from './deckbridge.js';
 import { seedSampleIfEmpty } from './seed.js';
 import { hydrateIcons, iconSvg } from './icons.js';
 
-const APP_VERSION = '1.0.0';
+// Web/PWA fallback only — there's no native bundle to query there. On native
+// the About screen reads the real version from the app bundle (see
+// aboutVersionLabel), so iOS/iPadOS/macOS always show exactly what Xcode
+// archived. Keep this in sync with package.json (and Xcode MARKETING_VERSION).
+const WEB_VERSION = '1.0.0';
+
+// Native: CFBundleShortVersionString (= Xcode MARKETING_VERSION), read straight
+// from the bundle so the displayed version can't drift from what was archived.
+// Web: the WEB_VERSION constant above. (App.getInfo() also returns `build` if we
+// ever want to show "1.0.0 (3)".)
+async function aboutVersionLabel() {
+  const App = plugin('App');
+  if (App?.getInfo) {
+    try {
+      const { version } = await App.getInfo();
+      if (version) return version;
+    } catch { /* fall through to web fallback */ }
+  }
+  return WEB_VERSION;
+}
 
 const $ = (id) => document.getElementById(id);
 const grid = $('deck-grid');
@@ -488,7 +507,7 @@ function wireFileHandler() {
 async function boot() {
   root.dataset.platform = platformName();
   hydrateIcons(document);
-  $('about-version').textContent = APP_VERSION;
+  aboutVersionLabel().then((v) => { $('about-version').textContent = v; });
   // Drop the pre-JS anti-flash guards; CSS visibility/opacity controls these now.
   ['player', 'settings', 'actions-sheet', 'confirm-sheet', 'sheet-scrim', 'toast'].forEach((id) => $(id).removeAttribute('hidden'));
   initTheme();
