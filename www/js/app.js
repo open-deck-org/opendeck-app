@@ -8,7 +8,7 @@ import { DeckBridge } from './deckbridge.js';
 import { seedSampleIfEmpty } from './seed.js';
 import { hydrateIcons, iconSvg } from './icons.js';
 
-const APP_VERSION = '0.1.0';
+const APP_VERSION = '1.0.0';
 
 const $ = (id) => document.getElementById(id);
 const grid = $('deck-grid');
