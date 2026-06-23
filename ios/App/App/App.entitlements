@@ -7,6 +7,12 @@
 	     entitlements file. -->
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
+	<!-- WKWebView's WebContent process requires the client-network entitlement to
+	     initialize under App Sandbox; without it the web view renders blank even
+	     for local (capacitor://) content. This is a capability, not usage — the
+	     app still makes no outbound requests. -->
+	<key>com.apple.security.network.client</key>
+	<true/>
 	<!-- Read decks the user opens from Finder / the share sheet (open-in-place).
 	     OpenDeck copies them into its own container, so read-only is enough. -->
 	<key>com.apple.security.files.user-selected.read-only</key>
