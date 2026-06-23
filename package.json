@@ -13,7 +13,8 @@
     "add:android": "cap add android && cap sync android",
     "open:ios": "cap open ios",
     "open:android": "cap open android",
-    "dist:collect": "bash scripts/collect-dist.sh"
+    "dist:collect": "bash scripts/collect-dist.sh",
+    "prearchive": "bash scripts/prearchive.sh"
   },
   "dependencies": {
     "@capacitor/android": "^6.2.1",
