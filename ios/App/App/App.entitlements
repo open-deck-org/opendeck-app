@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Mac App Store requires App Sandbox. Applied to the Mac (Catalyst) build
+	     only, via CODE_SIGN_ENTITLEMENTS[sdk=macosx*]; the iOS build has no
+	     entitlements file. -->
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+	<!-- Read decks the user opens from Finder / the share sheet (open-in-place).
+	     OpenDeck copies them into its own container, so read-only is enough. -->
+	<key>com.apple.security.files.user-selected.read-only</key>
+	<true/>
+</dict>
+</plist>
