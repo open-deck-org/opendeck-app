@@ -57,7 +57,7 @@ PRESENT ANYWHERE
 YOUR LIBRARY
 • Import decks from Files, AirDrop, or the share sheet.
 • Everything is organized in one tidy library.
-• A short welcome deck is included so you can see how it works on first launch.
+• A short welcome deck and a few example decks are included so you can see how it works on first launch.
 
 PRIVATE BY DESIGN
 • OpenDeck collects no data and makes no network requests.
@@ -139,7 +139,11 @@ OpenDeck is a viewer for self-contained HTML *documents* ("decks"), analogous to
 
 Each deck renders inside a sandboxed, cross-origin iframe served from an isolated origin (a custom deck:// scheme on iOS/macOS). The sandbox withholds top-level navigation, so a deck can never replace or reach the app shell or the native bridge. The app's functionality is fixed; decks cannot alter it. (Ref: Guideline 2.5.2.)
 
-To test: the app seeds a "Welcome" deck on first launch — open it from the library and tap/arrow through the slides. To test import, AirDrop or share any .deck file to the device and choose OpenDeck, or open one from the Files app.
+To test presenting: on first launch the app preloads a short "Welcome" deck plus three example decks (illustrative HTML presentations) — open any of them from the library and move through the slides by tapping the screen (iPhone/iPad), using the on-screen arrow controls or the thumbnail rail, or pressing the left/right arrow keys.
+
+To test import: ready-made .deck files are downloadable from the "Examples" section of the home page at https://open-deck.org (smallest is "What Compounding Actually Does", 0.3 MB — direct link: https://open-deck.org/downloads/compounding.deck). Download one on the device, then open it via the system Share sheet → OpenDeck, or from the Files app — it is added to the library. Note: those three decks are also preloaded, and decks are content-addressed, so re-importing one simply refreshes it rather than duplicating; to watch a brand-new deck appear, first delete it from the library (••• → Delete) and then import the downloaded file. (AirDrop'ing any .deck to the device and choosing OpenDeck works too.)
+
+The bundled example decks are first-party sample content; any photographs in them are licensed stock imagery (Pexels License, which permits commercial and in-app use).
 
 The app collects no data and makes no network requests; everything is stored on-device.
 ```
