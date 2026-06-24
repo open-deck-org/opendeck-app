@@ -145,6 +145,8 @@ To test import: ready-made .deck files are downloadable from the "Examples" sect
 
 The bundled example decks are first-party sample content; any photographs in them are licensed stock imagery (Pexels License, which permits commercial and in-app use).
 
+Two of the bundled sample decks include an optional, disabled authoring tool whose source references a third-party text-to-speech API (api.elevenlabs.io). On device this UI is hidden (the decks ship "exported") and the deck sandbox's Content-Security-Policy (connect-src 'self') blocks any such request — so the app makes no network calls and collects no data.
+
 The app collects no data and makes no network requests; everything is stored on-device.
 ```
 
