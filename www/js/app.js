@@ -502,10 +502,22 @@ function wireFileHandler() {
   });
 }
 
+/* ----------------------------- shell SW (web) --------------------------- */
+// Register the app-shell service worker so the installed PWA / Store (MSIX)
+// build launches offline. Web only: native Capacitor builds serve the shell
+// from capacitor:// and have no use for it. The deck-runtime SW (origin B) is a
+// SEPARATE registration handled by deckbridge.js / bridge.html — not this one.
+function registerShellSW() {
+  if (isNative() || !('serviceWorker' in navigator)) return;
+  // Fire-and-forget: never block boot on registration.
+  navigator.serviceWorker.register('sw.js').catch((err) => console.warn('shell SW registration failed', err));
+}
+
 /* --------------------------------- boot --------------------------------- */
 
 async function boot() {
   root.dataset.platform = platformName();
+  registerShellSW();
   hydrateIcons(document);
   aboutVersionLabel().then((v) => { $('about-version').textContent = v; });
   // Drop the pre-JS anti-flash guards; CSS visibility/opacity controls these now.

@@ -24,17 +24,27 @@ const SHOWCASE_DECKS = [
   'samples/compounding.deck',
 ];
 
+// fetch() resolves (not rejects) on 404/500, so a failed request would otherwise
+// hand us the *error page's* bytes — which we'd then persist AS the deck. Guard
+// every seed fetch: a non-OK response throws, the caller skips that deck, and
+// the next launch retries (the library is still empty). Never store garbage.
+async function fetchOk(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`fetch ${url} -> ${res.status}`);
+  return res;
+}
+
 async function importShowcase(path) {
-  const buf = await (await fetch(path)).arrayBuffer();
+  const buf = await (await fetchOk(path)).arrayBuffer();
   const filename = path.split('/').pop();
   await DeckStore.importPackage(new Uint8Array(buf), filename);
 }
 
 async function seedWelcome() {
-  const meta = await (await fetch(`${WELCOME_DIR}/deck.json`)).json();
+  const meta = await (await fetchOk(`${WELCOME_DIR}/deck.json`)).json();
   const files = new Map();
   for (const rel of WELCOME_FILES) {
-    const buf = await (await fetch(`${WELCOME_DIR}/${rel}`)).arrayBuffer();
+    const buf = await (await fetchOk(`${WELCOME_DIR}/${rel}`)).arrayBuffer();
     files.set(rel, new Uint8Array(buf));
   }
   // Same content-addressed identity as imported decks (never the deck.json id).
