@@ -502,6 +502,34 @@ function wireFileHandler() {
   });
 }
 
+/* --------------------------- open-by-URL (deep link) -------------------- */
+// A site link can open a specific deck straight into the player, e.g. the
+// marketing "Examples" cards:
+//   https://app.open-deck.org/?open=samples/compounding.deck
+// SAME-ORIGIN ONLY — the shell's CSP is connect-src 'self', so the deck must be
+// served from this origin (the app's own bundled samples). We import it (content-
+// addressed, so it dedups against the already-seeded copy and the shell SW serves
+// the bytes from cache after first run) and present it. The query is then dropped
+// so a reload — or the installed PWA's start_url — opens to the library, not a deck.
+async function openDeckFromParam() {
+  const raw = new URLSearchParams(location.search).get('open');
+  if (!raw) return;
+  let url;
+  try { url = new URL(raw, location.href); } catch { return; }
+  if (url.origin !== location.origin) { console.warn('open: ignoring cross-origin deck', raw); return; }
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`fetch ${url.pathname} -> ${res.status}`);
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    const manifest = await importFromBytes(bytes, url.pathname.split('/').pop() || 'deck.deck');
+    if (manifest) openPlayer(manifest);
+  } catch (err) {
+    console.warn('open-by-URL failed', err);
+  } finally {
+    if (window.history?.replaceState) history.replaceState({}, '', location.pathname);
+  }
+}
+
 /* ----------------------------- shell SW (web) --------------------------- */
 // Register the app-shell service worker so the installed PWA / Store (MSIX)
 // build launches offline. Web only: native Capacitor builds serve the shell
@@ -531,6 +559,7 @@ async function boot() {
   await seedSampleIfEmpty();
   await syncDecksToRuntime();
   await refresh();
+  await openDeckFromParam();   // deep link (?open=…) presents a deck straight away
 }
 
 boot();
