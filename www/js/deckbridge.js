@@ -35,29 +35,67 @@ function rpc(msg, transfer) {
   });
 }
 
+const READY_TIMEOUT = 5000;   // per-attempt wait for B's 'ready' handshake
+const MAX_ATTEMPTS = 3;       // self-heal a transient bridge load (e.g. an edge 403)
+
 // Initialize once. `origin` is B's origin (e.g. http://localhost:5174).
 export function init(origin) {
   if (ready) return ready;
   bOrigin = new URL(origin).origin;
   window.addEventListener('message', onMessage);
-  ready = new Promise((resolve, reject) => {
-    frame = document.createElement('iframe');
-    frame.hidden = true;
-    frame.setAttribute('aria-hidden', 'true');
-    frame.style.display = 'none';
+  ready = (async () => {
+    let lastErr = null;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        await loadBridge(attempt);
+        return;
+      } catch (e) {
+        lastErr = e;
+        if (e && e.fatal) throw e;   // B reported a real error; retrying won't help
+      }
+    }
+    throw lastErr || new Error('deck runtime did not become ready');
+  })();
+  return ready;
+}
+
+// Load B's bridge into a fresh hidden iframe and wait for its 'ready' handshake.
+// Cloudflare's edge can intermittently 403 the cross-site iframe navigation; a
+// failed load yields no 'ready' message, so we time out and let init() retry
+// with a cache-busting param rather than hanging on a single bad response.
+function loadBridge(attempt) {
+  return new Promise((resolve, reject) => {
+    if (frame) { try { frame.remove(); } catch { /* gone */ } frame = null; }
+    const f = document.createElement('iframe');
+    f.hidden = true;
+    f.setAttribute('aria-hidden', 'true');
+    f.style.display = 'none';
+    let settled = false;
+    const cleanup = () => { window.removeEventListener('message', onReady); clearTimeout(timer); };
     const onReady = (event) => {
-      if (event.origin !== bOrigin) return;
+      if (event.origin !== bOrigin || settled) return;
       const m = event.data || {};
-      if (m.type === 'ready') { window.removeEventListener('message', onReady); resolve(); }
-      else if (m.type === 'error') { window.removeEventListener('message', onReady); reject(new Error(m.error)); }
+      if (m.type === 'ready') {
+        settled = true; cleanup(); frame = f; resolve();
+      } else if (m.type === 'error') {
+        settled = true; cleanup();
+        try { f.remove(); } catch { /* gone */ }
+        const err = new Error(m.error); err.fatal = true; reject(err);
+      }
     };
     window.addEventListener('message', onReady);
-    // Pass the shell origin so B can pin its message sender to us.
-    frame.src = `${bOrigin}/bridge.html?shell=${encodeURIComponent(location.origin)}`;
-    document.body.appendChild(frame);
-    setTimeout(() => reject(new Error('deck runtime did not become ready')), 15000);
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true; cleanup();
+      try { f.remove(); } catch { /* gone */ }
+      reject(new Error('deck runtime did not become ready'));
+    }, READY_TIMEOUT);
+    // Pass the shell origin so B can pin its message sender to us. From the 2nd
+    // try on, a counter cache-busts so the retry gets a fresh fetch.
+    const bust = attempt > 1 ? `&try=${attempt}` : '';
+    f.src = `${bOrigin}/bridge.html?shell=${encodeURIComponent(location.origin)}${bust}`;
+    document.body.appendChild(f);
   });
-  return ready;
 }
 
 async function has(id) {
