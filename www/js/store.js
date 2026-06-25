@@ -131,6 +131,19 @@ const webBackend = {
     });
   },
 
+  // Read a single file's bytes + mime from the SHELL store. Used to render deck
+  // cover thumbnails as same-origin blobs: the card <img> can't load from the
+  // deck-runtime origin (B's SW only serves the deck's own iframe, not the
+  // shell's cross-origin subresource requests), so we draw it from here instead.
+  async readFile(id, path) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const r = db.transaction('files').objectStore('files').get(`${id}/${path}`);
+      r.onsuccess = () => resolve(r.result || null);   // { data, mime } | null
+      r.onerror = () => reject(r.error);
+    });
+  },
+
   async touch(id) {
     const db = await openDB();
     await tx(db, ['decks'], 'readwrite', (t) => {
@@ -286,4 +299,8 @@ export const DeckStore = {
   readFiles: (id) => backend.readFiles
     ? backend.readFiles(id)
     : Promise.reject(new Error('readFiles is web-only')),
+  // Web-only: read one file (e.g. the cover thumbnail) for same-origin rendering.
+  readFile: (id, path) => backend.readFile
+    ? backend.readFile(id, path)
+    : Promise.reject(new Error('readFile is web-only')),
 };

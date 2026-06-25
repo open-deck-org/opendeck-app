@@ -113,17 +113,7 @@ function deckCard(manifest) {
 
   const thumb = document.createElement('span');
   thumb.className = 'thumb';
-  if (manifest.thumbnail) {
-    const img = document.createElement('img');
-    img.className = 'thumb__img';
-    img.loading = 'lazy';
-    img.alt = '';
-    img.addEventListener('error', () => { img.remove(); addGlyph(thumb, title); });
-    img.src = deckUrl(manifest, manifest.thumbnail);
-    thumb.appendChild(img);
-  } else {
-    addGlyph(thumb, title);
-  }
+  renderThumb(thumb, manifest, title);
   open.appendChild(thumb);
 
   // Single top-right control, reused: opens the in-app card menu (favorite /
@@ -168,6 +158,41 @@ function addGlyph(thumb, title) {
   glyph.className = 'thumb__glyph';
   glyph.textContent = (title.trim()[0] || '▦').toUpperCase();
   thumb.appendChild(glyph);
+}
+
+// Draw a deck's cover thumbnail, falling back to a letter glyph.
+//  - Native: the deck:// scheme handler serves the file to any caller, so a
+//    direct <img src> works.
+//  - Web: the card <img> is a cross-origin subresource of the SHELL, which the
+//    deck-runtime SW (origin B) does NOT serve (it only controls the deck's own
+//    iframe). So we read the bytes from the shell's own store and show a blob —
+//    same-origin, offline-safe, and independent of the deck runtime.
+async function renderThumb(thumb, manifest, title) {
+  if (!manifest.thumbnail) { addGlyph(thumb, title); return; }
+  const img = document.createElement('img');
+  img.className = 'thumb__img';
+  img.loading = 'lazy';
+  img.alt = '';
+  img.addEventListener('error', () => {
+    img.remove();
+    if (!thumb.querySelector('.thumb__glyph')) addGlyph(thumb, title);
+  });
+
+  if (isNative()) {
+    img.src = deckUrl(manifest, manifest.thumbnail);
+    thumb.appendChild(img);
+    return;
+  }
+  try {
+    const rec = await DeckStore.readFile(manifest.id, manifest.thumbnail);
+    if (!rec || !rec.data) { addGlyph(thumb, title); return; }
+    const url = URL.createObjectURL(new Blob([rec.data], { type: rec.mime || 'image/png' }));
+    img.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+    img.src = url;
+    thumb.appendChild(img);
+  } catch {
+    addGlyph(thumb, title);
+  }
 }
 
 /* ------------------------------ sort / group ---------------------------- */
