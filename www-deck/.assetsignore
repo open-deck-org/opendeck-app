@@ -1,0 +1,8 @@
+# Files in www-deck/ that should NOT be served as static assets.
+# Same format as .gitignore.
+
+# Consumed by Cloudflare as response headers, never served as a plain file.
+_headers
+
+# Dev-only config for the `serve` package (npm run dev); not used in prod.
+serve.json

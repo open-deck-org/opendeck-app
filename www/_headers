@@ -1,0 +1,33 @@
+# Cloudflare _headers — OpenDeck shell (origin A, app.open-deck.org).
+# Consumed by Workers Static Assets (not served as a file).
+#
+# Single CSP rule on the catch-all: the app is one self-contained SPA with no
+# sub-areas that need a different policy, so there's no risk of the header
+# doubling that the marketing site's _headers has to work around.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+  # connect-src 'self' is the structural backing for "no network / Data Not
+  # Collected": the shell only fetches its own assets. Deck bytes reach the deck
+  # runtime (B) via postMessage, never fetch — so B is allowed to FRAME and to
+  # serve images (thumbnails), but the shell makes no outbound connections.
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://decks.open-deck.org; font-src 'self'; connect-src 'self'; frame-src https://decks.open-deck.org; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+
+# The service worker must update promptly (don't let a CDN pin an old copy).
+/sw.js
+  Cache-Control: no-cache
+
+# Fingerprint-free static assets can cache hard.
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+/icons/*
+  Cache-Control: public, max-age=604800
+/vendor/*
+  Cache-Control: public, max-age=604800
+
+# .deck packages downloaded from the app keep the registered type.
+/samples/*.deck
+  Content-Type: application/x-deck

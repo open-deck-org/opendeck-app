@@ -1,0 +1,24 @@
+# Cloudflare _headers — OpenDeck deck runtime (origin B, decks.open-deck.org).
+#
+# B is FRAMED by the shell (A): the hidden control bridge and every deck render
+# are iframes inside app.open-deck.org. So B must NOT carry a blanket
+# `X-Frame-Options: DENY` (that would block the shell from embedding it).
+# Framing is instead restricted with CSP `frame-ancestors` to the shell only.
+#
+# Note: actual deck content at /__deck__/<id>/… is emitted by THIS origin's
+# service worker (www-deck/sw.js), which sets its own per-response CSP — these
+# header rules govern only the static bridge + SW script that Cloudflare serves.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# The control bridge: only the shell may frame it. Its bootstrap script is
+# inline, hence 'unsafe-inline' on script-src.
+/bridge.html
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors https://app.open-deck.org
+  Cache-Control: no-cache
+
+# The deck service worker must update promptly.
+/sw.js
+  Cache-Control: no-cache

@@ -1,0 +1,21 @@
+// Cloudflare Workers Static Assets — OpenDeck shell (origin A).
+// Serves www/ at https://app.open-deck.org. Deploy:
+//   npx wrangler deploy -c wrangler.app.jsonc
+// Assets-only (no Worker script). _headers in www/ sets the CSP; .deck files
+// carry their content-type from there too.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "opendeck-app",
+  "compatibility_date": "2026-06-22",
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "www",
+    // Keep real 404s for missing files — seed.js relies on them (a SPA fallback
+    // would serve index.html for a missing deck asset and corrupt the seed).
+    "not_found_handling": "none",
+    "html_handling": "auto-trailing-slash"
+  },
+  "routes": [
+    { "pattern": "app.open-deck.org", "custom_domain": true }
+  ]
+}

@@ -1,0 +1,20 @@
+// Cloudflare Workers Static Assets — OpenDeck deck runtime (origin B).
+// Serves www-deck/ at https://decks.open-deck.org. Deploy:
+//   npx wrangler deploy -c wrangler.decks.jsonc
+// This origin hosts only the bridge page + the deck service worker; actual deck
+// files are served by that SW from B's IndexedDB at /__deck__/<id>/… so they
+// never touch Cloudflare. _headers restricts who may frame the bridge.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "opendeck-decks",
+  "compatibility_date": "2026-06-22",
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "www-deck",
+    "not_found_handling": "none",
+    "html_handling": "auto-trailing-slash"
+  },
+  "routes": [
+    { "pattern": "decks.open-deck.org", "custom_domain": true }
+  ]
+}

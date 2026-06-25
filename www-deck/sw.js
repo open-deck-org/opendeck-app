@@ -11,12 +11,16 @@ const DB_NAME = 'opendeck-deck-runtime';
 const STORE = 'files';
 const PREFIX = '/__deck__/';
 
-// A deck loads only its own (same-origin) assets and must not phone home.
+// A deck loads only its own (same-origin) assets and must not phone home. It is
+// also only ever framed by the OpenDeck shell — frame-ancestors pins that to the
+// prod shell origin plus the localhost dev shell, so no other site can embed a
+// user's deck even if it learns the (content-addressed) URL.
 const DECK_CSP =
   "default-src 'self' blob: data:; img-src 'self' blob: data:; " +
   "media-src 'self' blob: data:; font-src 'self' data:; " +
   "style-src 'self' 'unsafe-inline'; " +
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' blob: data:";
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' blob: data:; " +
+  "frame-ancestors https://app.open-deck.org http://localhost:5173 http://127.0.0.1:5173";
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));

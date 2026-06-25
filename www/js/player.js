@@ -34,10 +34,15 @@ export const ANDROID_DECK_DOMAIN = 'decks.opendeck';
 // <meta name="opendeck-deck-origin" content="https://decks.example.com">.
 // Dev default: a second port (cross-origin to the shell on :5173).
 export function deckRuntimeOrigin() {
+  const { protocol, hostname } = location;
+  // Dev FIRST: the deck runtime is a second local port. This deliberately wins
+  // over the prod <meta> below so `npm run dev` needs no edit to index.html.
+  if (hostname === 'localhost' || hostname === '127.0.0.1') return `${protocol}//${hostname}:5174`;
+  // Prod: an explicit origin (e.g. https://decks.open-deck.org) decoupled from
+  // the shell's hostname, so the shell can live on app.<host> while B is a
+  // one-level subdomain (keeps it under Cloudflare Universal SSL).
   const meta = document.querySelector('meta[name="opendeck-deck-origin"]');
   if (meta && meta.content) return new URL(meta.content).origin;
-  const { protocol, hostname } = location;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') return `${protocol}//${hostname}:5174`;
   return `${protocol}//decks.${hostname}`;
 }
 
