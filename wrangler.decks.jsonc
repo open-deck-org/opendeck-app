@@ -12,7 +12,12 @@
   "assets": {
     "directory": "www-deck",
     "not_found_handling": "none",
-    "html_handling": "auto-trailing-slash"
+    // Serve literal paths with NO trailing-slash redirect: the shell loads
+    // /bridge.html directly, so this keeps it a single 200 (not 307 -> /bridge)
+    // AND keeps the /bridge.html _headers CSP (frame-ancestors) on the served
+    // document. B only serves bridge.html + sw.js, so it needs no index/dir
+    // handling. Deck content is served by the SW, never by Cloudflare.
+    "html_handling": "none"
   },
   "routes": [
     { "pattern": "decks.open-deck.org", "custom_domain": true }
