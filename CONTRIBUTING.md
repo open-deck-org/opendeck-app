@@ -15,7 +15,7 @@ A few things up front so you know exactly what you're contributing to:
   Certificate of Origin** (see below). You keep ownership of what you write.
 - **The app is free and will stay free.** There are no paid tiers and no in-app
   purchases. You're not contributing to a paid product. The official store
-  builds are published by Sinisha Djukic (see `TRADEMARKS.md`); the code
+  builds are published by the OpenDeck project (see `TRADEMARKS.md`); the code
   advantage is zero — anyone can build the same app from this repo.
 
 ## Sign your commits (DCO)

@@ -1,7 +1,7 @@
 # Trademark & Fork Policy
 
 The OpenDeck **code** is open source under the Apache License 2.0. The OpenDeck
-**name, logo, and icon** are not — they are trademarks of Sinisha Djukic. This
+**name, logo, and icon** are not — they are trademarks of the OpenDeck project. This
 is the normal split for an open project with an official store presence, and
 this document spells out exactly what that means for you, so there are no
 surprises.
@@ -50,7 +50,7 @@ advantage over yours — the only thing reserved is the name.
 ## The official builds
 
 The official OpenDeck apps in the app stores are built, signed, and published by
-Sinisha Djukic. The app is, and will remain, **free** — no paid tiers, no
+the OpenDeck project. The app is, and will remain, **free** — no paid tiers, no
 in-app purchases. Source for the official build is this repository; the only
 things not in the repository are the signing keys, store credentials, and
 branded assets.

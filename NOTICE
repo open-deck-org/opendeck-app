@@ -1,7 +1,7 @@
 OpenDeck
-Copyright 2026 Sinisha Djukic
+Copyright 2026 The OpenDeck Authors
 
-This product includes software developed by Sinisha Djukic and the OpenDeck
+This product includes software developed by the OpenDeck project and its
 contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
@@ -10,6 +10,6 @@ License in the accompanying LICENSE file or at:
 
     http://www.apache.org/licenses/LICENSE-2.0
 
-"OpenDeck" and the OpenDeck logo are trademarks of Sinisha Djukic. The Apache
+"OpenDeck" and the OpenDeck logo are trademarks of the OpenDeck project. The Apache
 2.0 license grants rights to the software; it does not grant rights to the
 name or logo. See TRADEMARKS.md for the trademark and fork policy.

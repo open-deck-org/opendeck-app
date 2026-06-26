@@ -125,7 +125,7 @@ it, modify it, and ship products on it — including commercially — for free.
 **The app is free and always will be.** No paid tiers, no in-app purchases.
 
 **Who publishes the official app.** The OpenDeck apps in the app stores are
-built, signed, and published by Sinisha Djukic. This repository is the complete
+built, signed, and published by the OpenDeck project. This repository is the complete
 source for that build — the only things kept out of it are the code-signing
 keys, store credentials, and branded assets (name and icon). Being the sole
 publisher of the *official* build is the only thing reserved; the code itself
