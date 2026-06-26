@@ -1,0 +1,17 @@
+{
+  "// note": "Committed example with GENERIC defaults. Your private build.config.json overrides these and is never committed.",
+  "productName": "Deck Player",
+  "appId": "org.example.deckplayer",
+  "displayName": "Deck Player",
+  "brand": {
+    "icon": "assets/brand/placeholder-icon.png",
+    "logo": "assets/brand/placeholder-logo.svg",
+    "accentColor": "#3355ff"
+  },
+  "store": {
+    "official": false,
+    "publisher": "",
+    "appleTeamId": "",
+    "androidPackage": ""
+  }
+}

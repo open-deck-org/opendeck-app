@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ".deck format / spec questions"
+    url: https://github.com/opendeck/spec/issues
+    about: Questions or proposals about the .deck format itself go to the spec repo.
+  - name: Security report
+    url: https://github.com/opendeck/app/security/advisories/new
+    about: Please report security issues privately, not as a public issue.
