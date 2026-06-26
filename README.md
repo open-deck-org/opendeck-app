@@ -117,8 +117,38 @@ remaining on-device verification checklist.
 Authoring: the **spiel-deck** skill exports a `.deck` directly
 (`deckExport.deck()` or "export as a .deck presentation").
 
+## Open source, official builds, and the `.deck` format
+
+OpenDeck is open source under the [Apache License 2.0](./LICENSE). You can build
+it, modify it, and ship products on it — including commercially — for free.
+
+**The app is free and always will be.** No paid tiers, no in-app purchases.
+
+**Who publishes the official app.** The OpenDeck apps in the app stores are
+built, signed, and published by Sinisha Djukic. This repository is the complete
+source for that build — the only things kept out of it are the code-signing
+keys, store credentials, and branded assets (name and icon). Being the sole
+publisher of the *official* build is the only thing reserved; the code itself
+gives that build no advantage over one you compile yourself.
+
+**You can build your own player.** Fork this, or write a brand-new viewer from
+scratch — we actively want alternative players. The one rule: a build you ship
+to end users must use its own name and icon, not "OpenDeck." See
+[TRADEMARKS.md](./TRADEMARKS.md).
+
+**The `.deck` format is an open standard.** The format that OpenDeck reads and
+writes is specified separately, under a CC0 public-domain dedication, in its own
+repository: **[the `.deck` spec](https://github.com/open-deck-org/opendeck-spec)**. Anyone may
+implement it — producers, players, libraries in any language — with no
+permission and no attribution required. If you build something on it,
+[tell us](https://github.com/open-deck-org/opendeck-app/issues) and we'll link to it.
+
+**Contributing.** See [CONTRIBUTING.md](./CONTRIBUTING.md). We use a lightweight
+DCO sign-off (`git commit -s`) rather than a CLA — you keep ownership of your
+work.
+
 ## License
 
-OpenDeck is released under the [MIT License](LICENSE). The bundled typefaces —
+OpenDeck is released under the [Apache License 2.0](LICENSE). The bundled typefaces —
 **Inter** and **Newsreader** (in `www/fonts/`) — are licensed under the SIL Open
 Font License 1.1 and are redistributed under its terms.
