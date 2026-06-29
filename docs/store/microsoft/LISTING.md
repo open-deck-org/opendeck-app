@@ -1,7 +1,7 @@
 # Microsoft Store Listing — paste-ready metadata
 
 Everything to fill the Partner Center listing for **OpenDeck** on Windows (PWA via
-PWABuilder → MSIX). Copy the fields straight in. Mirrors `docs/APP-STORE-LISTING.md`;
+PWABuilder → MSIX). Copy the fields straight in. Mirrors `docs/store/apple/LISTING.md`;
 the submission *checklist* lives outside the repo
 (`opendeck-app-microsoft-store-checklist.md`).
 
@@ -104,15 +104,15 @@ First release of OpenDeck for Windows — open and present your HTML decks, full
 
 ---
 
-## Store images (in `docs/store-logos/` and `docs/appstore-screenshots/`)
+## Store images (in `docs/store/microsoft/`)
 
 | Partner Center slot | File |
 |---|---|
-| Screenshots → Desktop (3) | `docs/appstore-screenshots/mac/01-library.png`, `02-presenting.png`, `03-settings.png` |
-| Store logos → 9:16 Poster art | `docs/store-logos/poster-art-1440x2160.png` |
-| Store logos → 1:1 Box art | `docs/store-logos/box-art-1080x1080.png` |
-| Store logos → 1:1 App tile icon | `docs/store-logos/app-tile-300x300.png` (150/71 also available) |
-| Windows and Xbox image → 16:9 Super hero art | `docs/store-logos/super-hero-1920x1080.png` _(title-free, OG style)_ |
+| Screenshots → Desktop (3) | `docs/store/microsoft/screenshots/desktop/01-library.png`, `02-presenting.png`, `03-settings.png` _(**Windows-native captures** — must not show macOS/iOS UI; see [screenshots/desktop/README.md](screenshots/desktop/README.md))_ |
+| Store logos → 9:16 Poster art | `docs/store/microsoft/store-images/poster-art-1440x2160.png` |
+| Store logos → 1:1 Box art | `docs/store/microsoft/store-images/box-art-1080x1080.png` |
+| Store logos → 1:1 App tile icon | `docs/store/microsoft/store-images/app-tile-300x300.png` (150/71 also available) |
+| Windows and Xbox image → 16:9 Super hero art | `docs/store/microsoft/store-images/super-hero-1920x1080.png` _(title-free, OG style)_ |
 
 Logos generated from `docs/assets/opendeck-icon.svg`; super hero art rendered from an
 OG-style HTML template (Newsreader + paper background, no wordmark — the slot forbids

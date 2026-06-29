@@ -90,7 +90,7 @@ capacitor.config.ts  appId / scheme config
 ## Documentation
 
 - **[docs/DESIGN.md](docs/DESIGN.md)** — the "Zen / Paper" design system; tokens, theming (light/dark/auto), screens, accessibility.
-- **[docs/APP-STORE-REVIEW-NOTES.md](docs/APP-STORE-REVIEW-NOTES.md)** — HIG/App-Review compliance, the 2.5.2 framing, privacy label, layered app icon.
+- **[docs/store/apple/REVIEW-NOTES.md](docs/store/apple/REVIEW-NOTES.md)** — HIG/App-Review compliance, the 2.5.2 framing, privacy label, layered app icon.
 - **[docs/BUILDING.md](docs/BUILDING.md)** — build & run each platform; environment gotchas.
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — how it works; security/isolation; player controls.
 - **[docs/DECISIONS.md](docs/DECISIONS.md)** — the *why* behind the key technical & design choices.

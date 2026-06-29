@@ -164,5 +164,5 @@ Not applicable — no login or account.
 | App Privacy label | this file → Data Not Collected |
 | Age Rating | this file → 4+ |
 | Review notes | this file |
-| Screenshots | capture per `docs/APP-STORE-RELEASE-RUNBOOK.md` |
+| Screenshots | capture per `docs/store/apple/RELEASE-RUNBOOK.md` |
 | Build | archive + upload per the runbook |
