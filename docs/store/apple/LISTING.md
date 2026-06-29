@@ -73,7 +73,7 @@ BEAUTIFUL & ACCESSIBLE
 MAKE YOUR OWN
 Decks are an open format — a single HTML file plus a small manifest. Create them with the free OpenDeck skill for AI coding agents, or any tool that exports the format. Learn more at open-deck.org.
 
-OpenDeck is open source and released under the MIT License.
+OpenDeck is open source.
 ```
 
 ---
@@ -164,5 +164,5 @@ Not applicable — no login or account.
 | App Privacy label | this file → Data Not Collected |
 | Age Rating | this file → 4+ |
 | Review notes | this file |
-| Screenshots | capture per `docs/APP-STORE-RELEASE-RUNBOOK.md` |
+| Screenshots | capture per `docs/store/apple/RELEASE-RUNBOOK.md` |
 | Build | archive + upload per the runbook |

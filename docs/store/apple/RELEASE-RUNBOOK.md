@@ -3,7 +3,7 @@
 Step-by-step to get OpenDeck from this repo into the App Store. Everything here
 runs on **your Mac** with Xcode signed into the Apple Developer account (team
 `VX92BPRWZ8`). Listing text and questionnaire answers come from
-`docs/APP-STORE-LISTING.md`.
+`docs/store/apple/LISTING.md`.
 
 OpenDeck is one Xcode target shipping to **two platforms** under one App Store
 Connect record: **iOS/iPadOS** and **macOS (Mac Catalyst)**. You archive and
@@ -139,7 +139,7 @@ Capture each in light mode (dark optional).
 ## 9. Fill the version metadata
 
 On both the **iOS** and **macOS** version pages, paste from
-`docs/APP-STORE-LISTING.md`:
+`docs/store/apple/LISTING.md`:
 
 - [ ] Name, Subtitle, Promotional text, Description, Keywords, What's New.
 - [ ] Support URL `https://open-deck.org/support/`, Marketing URL `https://open-deck.org/`.

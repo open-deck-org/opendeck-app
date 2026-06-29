@@ -67,7 +67,7 @@ exactly mirroring the theme mechanism above.
 Master: `docs/assets/opendeck-icon.svg` — a serif "deck, opened" mark (ink card
 + paper lens) on paper. Two groups (`#bg`, `#fg`) map to **Icon Composer**
 layers for the iOS/macOS layered Liquid Glass icon (light/dark/tinted). See
-`docs/APP-STORE-REVIEW-NOTES.md` for the build step.
+`docs/store/apple/REVIEW-NOTES.md` for the build step.
 
 ## Accessibility (honored, not bolted on)
 
