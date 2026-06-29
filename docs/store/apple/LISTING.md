@@ -73,7 +73,7 @@ BEAUTIFUL & ACCESSIBLE
 MAKE YOUR OWN
 Decks are an open format — a single HTML file plus a small manifest. Create them with the free OpenDeck skill for AI coding agents, or any tool that exports the format. Learn more at open-deck.org.
 
-OpenDeck is open source and released under the MIT License.
+OpenDeck is open source.
 ```
 
 ---

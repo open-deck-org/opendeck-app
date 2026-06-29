@@ -23,7 +23,7 @@ the submission *checklist* lives outside the repo
 | **Category** | Productivity |
 | **Price** | Free |
 | **Markets** | All |
-| **Copyright** (≤200) | `© 2026 OpenDeck. MIT License.` |
+| **Copyright** (≤200) | `© 2026 OpenDeck` |
 | **Additional license terms** | _(leave empty — Standard Application License Terms apply)_ |
 
 ---
@@ -61,7 +61,7 @@ BEAUTIFUL & ACCESSIBLE
 MAKE YOUR OWN
 Decks are an open format — a single HTML file plus a small manifest. Create them with the free OpenDeck skill for AI coding agents, or any tool that exports the format. Learn more at open-deck.org.
 
-OpenDeck is open source and released under the MIT License.
+OpenDeck is open source.
 ```
 
 ## Short description (≤1,000)
