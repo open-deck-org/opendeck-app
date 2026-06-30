@@ -24,7 +24,14 @@ store/
     screenshots/
       desktop/            Windows-native captures (must not show macOS/iOS UI)
     store-images/         poster / box / app-tile / super-hero art
-  # google-play/          reserved for a future Android submission
+  google-play/
+    LISTING.md            paste-ready Play Console metadata (Android, Capacitor → AAB)
+    REVIEW-NOTES.md       Play policy notes, Data safety, target-API & closed-test gates
+    RELEASE-RUNBOOK.md    build / sign (.aab) / upload steps
+    SUBMISSION-CHECKLIST.md  master progress tracker
+    screenshots/
+      phone/  tablet-7/  tablet-10/   Android-native captures
+    store-images/         icon-512 / feature-graphic 1024×500
 ```
 
 ## Status
@@ -33,3 +40,4 @@ store/
 |---|---|
 | Apple App Store | submitted |
 | Microsoft Store | failed cert `10.1.1.3` — re-capturing Desktop screenshots on Windows, then resubmit |
+| Google Play | not started — docs prepared (`google-play/`); next: build signed `.aab`, capture screenshots, run closed-test gate |
