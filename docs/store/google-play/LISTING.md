@@ -10,7 +10,7 @@ imposes a limit; stay at or under. Mirrors `docs/store/apple/LISTING.md` and
 > - Privacy Policy: `https://open-deck.org/privacy/`
 > - Support: `https://open-deck.org/support/`
 > - Website: `https://open-deck.org/`
-> - Support email: `s.djukic@gmail.com`
+> - Support email: `info@open-deck.org`
 
 ---
 
@@ -25,7 +25,7 @@ imposes a limit; stay at or under. Mirrors `docs/store/apple/LISTING.md` and
 | **Free or paid** | Free |
 | **Category** | Productivity |
 | **Tags** | Tools / Document management (pick the closest 2–3 in Console) |
-| **Contact email** | `s.djukic@gmail.com` |
+| **Contact email** | `info@open-deck.org` |
 | **Contact website** | `https://open-deck.org/` |
 
 > The Application ID `org.opendeck` is permanent once the first bundle is
@@ -174,7 +174,7 @@ only (Capacitor Filesystem / WebView IndexedDB).
 | Field | Value |
 |---|---|
 | **App category** | Productivity |
-| **Email** | `s.djukic@gmail.com` |
+| **Email** | `info@open-deck.org` |
 | **Website** | `https://open-deck.org/` |
 | **Phone** | _(optional — leave blank)_ |
 | **External marketing** | leave default (allowed) |
