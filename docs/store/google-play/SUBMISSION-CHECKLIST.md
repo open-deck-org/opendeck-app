@@ -5,16 +5,20 @@ as you go. Details for each step live in the sibling docs:
 [`LISTING.md`](LISTING.md) · [`REVIEW-NOTES.md`](REVIEW-NOTES.md) ·
 [`RELEASE-RUNBOOK.md`](RELEASE-RUNBOOK.md) · [`screenshots/README.md`](screenshots/README.md).
 
-**Status:** _assets prepared_ — icon, feature graphic & 3 phone screenshots ready in `store-images/` + `screenshots/phone/`; next is the developer account + signed `.aab`. Target version: `1.0` (versionCode `1`) · App ID: `org.opendeck`
+**Status:** _account created_ — owning Gmail `opendeckorg@gmail.com` ready; assets (icon, feature graphic, 3 phone screenshots) prepared. Next: register the Play developer account ($25 + ID), then build the signed `.aab`. Target version: `1.0` (versionCode `1`) · App ID: `org.opendeck`
 
 ---
 
 ## A. Account & program prerequisites
 
-- [ ] Google Play Developer account active ($25 one-time).
-- [ ] Identity verification complete (legal name/address; D-U-N-S if organization).
-- [ ] Account type known: **personal** (14-day closed-test gate applies) or **organization** (no gate).
-- [ ] If personal: plan for **≥12 testers, 14 continuous days** of closed testing before Production unlocks.
+> **Decided:** owning Google account = **`opendeckorg@gmail.com`** (dedicated project Gmail, 2FA on). Play account type = **Personal** (OpenDeck is not a legal entity). Public developer name = **OpenDeck**; public contact email = **`info@open-deck.org`**.
+> The old **`iRetro`** account on `s.djukic@gmail.com` was **closed for inactivity and is NOT reactivatable** — so the pre-Nov-2023 testing exemption is unavailable, and the **12-tester / 14-day closed-test gate applies**.
+
+- [x] Owning account created (`opendeckorg@gmail.com`, 2-Step Verification on).
+- [ ] Google Play Developer account registered & active ($25 one-time).
+- [ ] Identity verification complete (legal name/address; photo ID for personal).
+- [ ] Developer name set to `OpenDeck`; contact email set to `info@open-deck.org`.
+- [ ] **≥12 testers** lined up (reciprocal testing community) for the 14-day closed test.
 
 ## B. Build readiness (this repo)
 
