@@ -16,6 +16,13 @@ Suggested gallery order (Play Console lets you drag to reorder):
 Phone: **2 minimum**, up to 8. Tablet sets are optional but recommended (they
 unlock the "Designed for tablets" surfacing and show the responsive grid).
 
+> **Status (v1.0):** the 3 phone shots above are captured and committed. **Tablet
+> shots are deferred to a post-v1.0 listing update** — fresh tablet AVDs failed to
+> cold-boot on this machine (hung at "packet streamer / device offline"; the phone
+> AVD only booted because it had a saved snapshot). To add them later: boot a
+> tablet AVD once in **Android Studio → Device Manager** (it saves a snapshot),
+> then re-run the capture steps below against `tablet-7/` and `tablet-10/`.
+
 ## Specs
 
 | Asset | Dimensions | Format |

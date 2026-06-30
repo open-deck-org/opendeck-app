@@ -5,7 +5,7 @@ as you go. Details for each step live in the sibling docs:
 [`LISTING.md`](LISTING.md) · [`REVIEW-NOTES.md`](REVIEW-NOTES.md) ·
 [`RELEASE-RUNBOOK.md`](RELEASE-RUNBOOK.md) · [`screenshots/README.md`](screenshots/README.md).
 
-**Status:** _not started_ · Target version: `1.0` (versionCode `1`) · App ID: `org.opendeck`
+**Status:** _assets prepared_ — icon, feature graphic & 3 phone screenshots ready in `store-images/` + `screenshots/phone/`; next is the developer account + signed `.aab`. Target version: `1.0` (versionCode `1`) · App ID: `org.opendeck`
 
 ---
 
@@ -42,10 +42,10 @@ as you go. Details for each step live in the sibling docs:
 - [ ] App name `OpenDeck`.
 - [ ] Short description (≤80) — from [`LISTING.md`](LISTING.md).
 - [ ] Full description (≤4000) — from [`LISTING.md`](LISTING.md).
-- [ ] App icon **512 × 512** uploaded.
-- [ ] Feature graphic **1024 × 500** uploaded.
-- [ ] Phone screenshots (**≥2**) uploaded.
-- [ ] 7" + 10" tablet screenshots uploaded (recommended).
+- [ ] App icon **512 × 512** uploaded. _(file ready: `store-images/icon-512.png`)_
+- [ ] Feature graphic **1024 × 500** uploaded. _(file ready: `store-images/feature-graphic-1024x500.png`)_
+- [ ] Phone screenshots (**≥2**) uploaded. _(3 files ready in `screenshots/phone/`)_
+- [ ] ~~7" + 10" tablet screenshots~~ — **deferred to a post-v1.0 listing update** (optional on Play; emulator cold-boot blocked capture — see [`screenshots/README.md`](screenshots/README.md)).
 - [ ] Category **Productivity**; contact email + website set.
 - [ ] **What's new** text added to the release.
 
