@@ -17,7 +17,7 @@ as you go. Details for each step live in the sibling docs:
 - [x] Owning account created (`opendeckorg@gmail.com`, 2-Step Verification on).
 - [ ] Google Play Developer account registered & active ($25 one-time).
 - [ ] Identity verification complete (legal name/address; photo ID for personal).
-- [ ] **Device-access verification** — Google Play Console *app* on a **real Android 10+ phone**, signed in as `opendeckorg@gmail.com` → pick OpenDeck → "Verify device access". ⚠️ **Emulators are rejected** (anti-fraud / Play Integrity); one-time, any borrowed phone works.
+- [ ] **Device-access verification** — Google Play Console *app* on a **non-rooted, physical Android 10+ phone**, signed in as `opendeckorg@gmail.com` → pick OpenDeck → "Verify device access". ⚠️ **Emulators are rejected** (anti-fraud / Play Integrity). ⚠️ **Samsung Remote Test Lab / cloud devices also fail** — they're wiped between sessions, so adding a Google account hits Factory Reset Protection ("device was reset, use the original owner's account"), and Google requires a *personal physical* device anyway. One-time; any borrowed phone works.
 - [ ] Developer name set to `OpenDeck`; contact email set to `info@open-deck.org`.
 - [ ] **≥12 testers** lined up (reciprocal testing community) for the 14-day closed test.
 
